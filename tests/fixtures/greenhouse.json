@@ -1,0 +1,322 @@
+{
+ "jobs": [
+  {
+   "absolute_url": "https://www.wizeline.ai/careers/job?gh_jid=7027885",
+   "data_compliance": [
+    {
+     "type": "gdpr",
+     "requires_consent": false,
+     "requires_processing_consent": false,
+     "requires_retention_consent": false,
+     "retention_period": null,
+     "demographic_data_consent_applies": false
+    }
+   ],
+   "internal_job_id": 3183494,
+   "location": {
+    "name": "San Francisco, California, United States"
+   },
+   "metadata": [
+    {
+     "id": 14080,
+     "name": "Employment Type",
+     "value": "Full Time",
+     "value_type": "single_select"
+    },
+    {
+     "id": 153265,
+     "name": "description",
+     "value": null,
+     "value_type": "long_text"
+    },
+    {
+     "id": 1016526,
+     "name": "Interviewing guide",
+     "value": null,
+     "value_type": "url"
+    },
+    {
+     "id": 2115833,
+     "name": "Internal Level",
+     "value": "Level 4",
+     "value_type": "single_select"
+    },
+    {
+     "id": 2454257,
+     "name": "RR Resource Request",
+     "value": "RR",
+     "value_type": "short_text"
+    },
+    {
+     "id": 2454260,
+     "name": "Project Name",
+     "value": "None",
+     "value_type": "short_text"
+    },
+    {
+     "id": 11674367,
+     "name": "High Demand Job",
+     "value": null,
+     "value_type": "yes_no"
+    },
+    {
+     "id": 33108680,
+     "name": "Account",
+     "value": null,
+     "value_type": "short_text"
+    },
+    {
+     "id": 33108697,
+     "name": "Region",
+     "value": null,
+     "value_type": "short_text"
+    }
+   ],
+   "id": 7027885,
+   "updated_at": "2026-08-27T11:48:02-04:00",
+   "requisition_id": "None",
+   "title": "Account Executive",
+   "company_name": "WIZELINE",
+   "first_published": "2025-07-01T15:25:29-04:00",
+   "language": "en",
+   "application_deadline": null,
+   "content": "&lt;p&gt;&lt;strong&gt;We are:&lt;/strong&gt;&lt;br&gt;Wizeline, a global AI-centric technology solutions provider, develops cutting-edge, &lt;strong&gt;AI-powered&lt;/strong&gt; digital products and platforms. We partner with clients to leverage data and AI, accelerating market entry and driving business transformation. As a global community of innovators, we foster a culture of &lt;strong&gt;growth, collaboration, &lt;/strong&gt;and &lt;strong&gt;impact.&lt;/strong&gt;&lt;strong&gt;&lt;br&gt;&lt;/strong&gt;&lt;strong&gt;&lt;br&gt;&lt;/strong&gt;&lt;strong&gt;With the right people and the rig",
+   "departments": [
+    {
+     "id": 150606,
+     "name": "Go to Market",
+     "child_ids": [
+      150607,
+      72615,
+      143717
+     ],
+     "parent_id": null
+    }
+   ],
+   "offices": [
+    {
+     "id": 74748,
+     "name": "US based Remote ",
+     "location": null,
+     "child_ids": [],
+     "parent_id": 86247
+    }
+   ],
+   "ai_disclaimer": null,
+   "include_ai_disclaimer": null,
+   "ai_opt_out_request_url": null
+  },
+  {
+   "absolute_url": "https://www.wizeline.ai/careers/job?gh_jid=2593140",
+   "data_compliance": [
+    {
+     "type": "gdpr",
+     "requires_consent": false,
+     "requires_processing_consent": false,
+     "requires_retention_consent": false,
+     "retention_period": null,
+     "demographic_data_consent_applies": false
+    }
+   ],
+   "internal_job_id": 1558073,
+   "location": {
+    "name": "Mexico City- On-site"
+   },
+   "metadata": [
+    {
+     "id": 14080,
+     "name": "Employment Type",
+     "value": "Full Time",
+     "value_type": "single_select"
+    },
+    {
+     "id": 153265,
+     "name": "description",
+     "value": null,
+     "value_type": "long_text"
+    },
+    {
+     "id": 1016526,
+     "name": "Interviewing guide",
+     "value": null,
+     "value_type": "url"
+    },
+    {
+     "id": 2115833,
+     "name": "Internal Level",
+     "value": null,
+     "value_type": "single_select"
+    },
+    {
+     "id": 2454257,
+     "name": "RR Resource Request",
+     "value": null,
+     "value_type": "short_text"
+    },
+    {
+     "id": 2454260,
+     "name": "Project Name",
+     "value": null,
+     "value_type": "short_text"
+    },
+    {
+     "id": 11674367,
+     "name": "High Demand Job",
+     "value": null,
+     "value_type": "yes_no"
+    },
+    {
+     "id": 33108680,
+     "name": "Account",
+     "value": "Realtor",
+     "value_type": "short_text"
+    },
+    {
+     "id": 33108697,
+     "name": "Region",
+     "value": null,
+     "value_type": "short_text"
+    }
+   ],
+   "id": 2593140,
+   "updated_at": "2026-09-15T11:13:08-04:00",
+   "requisition_id": null,
+   "title": "Android Engineer",
+   "company_name": "WIZELINE",
+   "first_published": "2021-02-08T12:40:32-05:00",
+   "language": "en",
+   "application_deadline": null,
+   "content": "&lt;p&gt;&lt;strong&gt;We are:&lt;/strong&gt;&lt;/p&gt;\n&lt;p&gt;Wizeline, a global AI-native technology solutions provider, develops cutting-edge, &lt;strong&gt;AI-powered&lt;/strong&gt; digital products and platforms. We partner with clients to leverage data and AI, accelerating market entry and driving business transformation. As a global community of innovators, we foster a culture of &lt;strong&gt;growth, collaboration, &lt;/strong&gt;and &lt;strong&gt;impact.&lt;/strong&gt;&lt;/p&gt;\n&lt;p&gt;&lt;strong&gt;With the right people and the right ideas, there’s no limit to what we can achieve",
+   "departments": [
+    {
+     "id": 86794,
+     "name": "Mobile Engineering",
+     "child_ids": [],
+     "parent_id": 86756
+    }
+   ],
+   "offices": [
+    {
+     "id": 228448,
+     "name": "Mexico City",
+     "location": null,
+     "child_ids": [],
+     "parent_id": 86250
+    }
+   ],
+   "ai_disclaimer": null,
+   "include_ai_disclaimer": null,
+   "ai_opt_out_request_url": null
+  },
+  {
+   "absolute_url": "https://www.wizeline.ai/careers/job?gh_jid=7233442",
+   "data_compliance": [
+    {
+     "type": "gdpr",
+     "requires_consent": false,
+     "requires_processing_consent": false,
+     "requires_retention_consent": false,
+     "retention_period": null,
+     "demographic_data_consent_applies": false
+    }
+   ],
+   "internal_job_id": 3240325,
+   "location": {
+    "name": "Mexico"
+   },
+   "metadata": [
+    {
+     "id": 14080,
+     "name": "Employment Type",
+     "value": "Full Time",
+     "value_type": "single_select"
+    },
+    {
+     "id": 153265,
+     "name": "description",
+     "value": null,
+     "value_type": "long_text"
+    },
+    {
+     "id": 1016526,
+     "name": "Interviewing guide",
+     "value": null,
+     "value_type": "url"
+    },
+    {
+     "id": 2115833,
+     "name": "Internal Level",
+     "value": null,
+     "value_type": "single_select"
+    },
+    {
+     "id": 2454257,
+     "name": "RR Resource Request",
+     "value": null,
+     "value_type": "short_text"
+    },
+    {
+     "id": 2454260,
+     "name": "Project Name",
+     "value": null,
+     "value_type": "short_text"
+    },
+    {
+     "id": 11674367,
+     "name": "High Demand Job",
+     "value": null,
+     "value_type": "yes_no"
+    },
+    {
+     "id": 33108680,
+     "name": "Account",
+     "value": "Capital Group",
+     "value_type": "short_text"
+    },
+    {
+     "id": 33108697,
+     "name": "Region",
+     "value": null,
+     "value_type": "short_text"
+    }
+   ],
+   "id": 7233442,
+   "updated_at": "2026-09-11T18:59:18-04:00",
+   "requisition_id": null,
+   "title": "Copy Editor ",
+   "company_name": "WIZELINE",
+   "first_published": "2026-03-25T17:46:09-04:00",
+   "language": "en",
+   "application_deadline": null,
+   "content": "&lt;div class=&quot;job-preview__description &quot; data-test-description=&quot;&quot;&gt;\n&lt;p&gt;Senior Copy Editor (Financial Content)&lt;/p&gt;\n&lt;p&gt;📍&amp;nbsp;&lt;strong&gt;Mexico – Mexico City or Guadalajara&lt;/strong&gt;&amp;nbsp;|&amp;nbsp;&lt;strong&gt;Hybrid&lt;/strong&gt;&lt;/p&gt;\n&lt;p&gt;We are:&lt;/p&gt;\n&lt;p&gt;&lt;strong&gt;Wizeline&lt;/strong&gt;&amp;nbsp;is a global AI-native technology solutions provider that develops cutting-edge, AI-powered digital products and platforms. We partner with clients to leverage data and AI, accelerating market entry and driving busines",
+   "departments": [
+    {
+     "id": 86759,
+     "name": "Visual Design",
+     "child_ids": [],
+     "parent_id": 86756
+    }
+   ],
+   "offices": [
+    {
+     "id": 86250,
+     "name": "Mexico",
+     "location": null,
+     "child_ids": [
+      114018,
+      74749,
+      228447,
+      228448
+     ],
+     "parent_id": 86249
+    }
+   ],
+   "ai_disclaimer": null,
+   "include_ai_disclaimer": null,
+   "ai_opt_out_request_url": null
+  }
+ ],
+ "meta": {
+  "total": 28
+ }
+}

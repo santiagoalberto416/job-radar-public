@@ -1,0 +1,400 @@
+# Configuración de job-radar (ejemplo).
+# Cópiala y ajústala a ti:   cp config.example.yaml config.yaml
+# Aquí NO van secretos (esos van en .env). Todos los valores de este ejemplo son de una persona ficticia:
+# desarrolladora front-end senior en Guadalajara que busca remoto para México/LatAm.
+
+# Dónde vives y qué modalidades te sirven. Claude lo usa para decidir si la ubicación de cada oferta encaja
+# (fits_location). El filtro de palabras usa prefilter.location_* más abajo. Puedes escribirlo en inglés o español.
+location:
+  home: "Guadalajara, Jalisco, Mexico (Central Time)"
+  remote_ok: ["Mexico", "LatAm", "the Americas", "worldwide"]
+  onsite_ok: ["Guadalajara", "Zapopan"]
+  notes: "US companies hiring contractors from Mexico/LatAm and nearshore roles also work"
+
+# Solo se envían a Telegram las ofertas con puntaje de Claude >= min_score.
+min_score: 70
+# Además exige que Claude diga que la ubicación/modalidad te sirve (según el bloque `location`).
+require_location_fit: true
+# Horario en que se envían mensajes de Telegram (hora local de la Mac, salvo que pongas `timezone`).
+# Lo que se encuentre fuera de este horario se guarda y se envía en la primera corrida dentro de él.
+# Borra este bloque para recibir mensajes a cualquier hora.
+notify_window:
+  start: "07:00"
+  end: "22:00"   # inclusivo: la corrida de las 22:00 sí envía
+  # timezone: America/Mexico_City
+# Crédito de la API de Claude. Anthropic no tiene API para consultar el saldo, así que job-radar lo estima:
+# el saldo que ves en console.anthropic.com -> Settings -> Billing, menos lo que job-radar ha gastado desde `as_of`.
+# Actualiza ambos valores al recargar. Llega un mensaje corto al día (primera corrida dentro de notify_window).
+credit:
+  balance_usd:        # ej. 10.00
+  as_of:              # cuándo leíste ese saldo, ej. "2026-10-01 09:30" (hora local) o "2026-10-01"
+  report_daily: true
+  warn_below_usd: 2.00
+# Reporte de skills (/skills en Telegram): skills que aparecen en tu perfil pero que NO quieres que cuenten como
+# "ya lo tienes" (ej. si usaste Java hace años en Android pero no tienes experiencia de backend con Spring).
+skills_report:
+  not_really_have: []   # ej. [Java/Spring, Kotlin]
+# Ignora ofertas publicadas hace más de estos días (cuando la fuente da la fecha).
+max_job_age_days: 30
+# Base de datos SQLite (relativa al repo).
+db_path: data/jobs.db
+# Tu perfil, que Claude usa para calificar (cópialo de profile.example.md).
+profile_path: profile.md
+
+llm:
+  # Modelo que califica las ofertas. Costos estimados en el README («Elegir el modelo»).
+  # Opciones: claude-opus-5 (~$8-15/mes), claude-sonnet-5 (~$4-7/mes), claude-haiku-4-5 (~$2-3/mes)
+  model: claude-sonnet-5
+  # Esfuerzo de razonamiento: low | medium | high (Haiku lo ignora). "low" basta para esta tarea.
+  effort: low
+  # Tope de costo: máximo de ofertas calificadas por corrida; el resto espera a la siguiente.
+  max_jobs_per_run: 40
+  # Las descripciones largas se recortan a estos caracteres antes de calificar (costo predecible).
+  max_description_chars: 8000
+  # Se deja de intentar calificar una oferta tras estos fallos (error de API o rechazo).
+  max_attempts: 3
+  # En claude-opus-5 / claude-fable-5-1, si el modelo rechaza una solicitud se reintenta en otro modelo.
+  refusal_fallback: true
+
+# Ofertas de estas empresas se descartan antes que nada (ej. tu empleador actual si tu búsqueda es confidencial).
+exclude_companies:
+  - Mi Empresa Actual
+
+# Filtro barato por palabras (palabra completa, sin importar mayúsculas ni acentos) antes de llamar a Claude.
+prefilter:
+  # El título debe contener una de estas...
+  title_include:
+    - frontend
+    - front-end
+    - front end
+    - ui engineer
+    - ui developer
+    - angular
+    - react
+    - reactjs
+    - react.js
+    - next.js
+    - nextjs
+    - javascript
+    - typescript
+    - web developer
+    - web engineer
+    - desarrollador frontend
+    - desarrollador front-end
+    - desarrollador front end
+  # ...o uno de estos títulos genéricos Y una palabra de seniority de abajo.
+  title_include_if_senior:
+    - full stack
+    - fullstack
+    - full-stack
+    - software engineer
+    - software developer
+    - product engineer
+    - desarrollador
+    - ingeniero de software
+    - programador
+  senior_keywords:
+    - senior
+    - sr
+    - staff
+    - lead
+    - principal
+    - tech lead
+    - líder técnico
+  # El título NO debe contener ninguna de estas.
+  title_exclude:
+    - junior
+    - jr
+    - intern
+    - internship
+    - trainee
+    - becario
+    - practicante
+    - entry level
+    - qa
+    - quality assurance
+    - test engineer
+    - tester
+    - sdet
+    - automation engineer
+    - data engineer
+    - data scientist
+    - data analyst
+    - analyst
+    - devops
+    - sre
+    - site reliability
+    - infrastructure
+    - platform engineer
+    - backend
+    - back-end
+    - back end
+    - machine learning
+    - ml engineer
+    - security engineer
+    - embedded
+    - firmware
+    - salesforce
+    - sap
+    - servicenow
+    - .net
+    - java developer
+    - java engineer
+    - php
+    - golang
+    - ruby
+    - android
+    - ios
+    - mobile
+    - manager
+    - director
+    - recruiter
+    - sales
+    - marketing
+    - designer
+    - support
+  # Reglas de ubicación (el texto de ubicación suele venir vacío o vago; entonces decide Claude):
+  # 1. Ofertas presenciales/híbridas pasan solo si la ubicación está en location_local (tu ciudad).
+  # 2. Si la ubicación menciona algo de location_exclude se descarta, salvo que también mencione
+  #    location_remote_allow o location_local (ej. "Remote - India or LatAm" pasa).
+  location_onsite_markers:
+    - hybrid
+    - híbrido
+    - on-site
+    - onsite
+    - presencial
+    - in-office
+    - in office
+  location_local:
+    - guadalajara
+    - zapopan
+    - jalisco
+  location_remote_allow:
+    - latam
+    - latin america
+    - américa latina
+    - americas
+    - north america
+    - worldwide
+    - anywhere
+    - mexico
+    - méxico
+    - mx
+  location_exclude:
+    # fuera de América
+    - india
+    - bengaluru
+    - bangalore
+    - hyderabad
+    - pune
+    - chennai
+    - london
+    - united kingdom
+    - uk
+    - ireland
+    - dublin
+    - germany
+    - berlin
+    - munich
+    - france
+    - paris
+    - spain
+    - madrid
+    - barcelona
+    - portugal
+    - lisbon
+    - poland
+    - warsaw
+    - netherlands
+    - amsterdam
+    - europe
+    - emea
+    - apac
+    - singapore
+    - japan
+    - tokyo
+    - australia
+    - sydney
+    - china
+    - korea
+    - israel
+    - tel aviv
+    - philippines
+    - vietnam
+    - pakistan
+    - nigeria
+    - kenya
+    - south africa
+    # otros países de América (se descartan salvo que también diga LatAm/México)
+    - canada
+    - toronto
+    - vancouver
+    - montreal
+    - chile
+    - peru
+    - perú
+    - colombia
+    - argentina
+    - brazil
+    - brasil
+    - uruguay
+    - ecuador
+    - venezuela
+    - bolivia
+    - paraguay
+    - costa rica
+    - guatemala
+    - panama
+    # ciudades de EE.UU. (las remotas desde EE.UU. pasan igual; Claude decide)
+    - new york
+    - san francisco
+    - seattle
+    - austin
+    - chicago
+    - boston
+    - denver
+    - atlanta
+    - washington
+
+sources:
+  # --- JobSpy: lee páginas públicas de búsqueda, sin iniciar sesión.
+  # ⚠️ Los términos de uso de LinkedIn e Indeed no permiten acceso automatizado; úsalo bajo tu responsabilidad.
+  indeed_mx:
+    enabled: true
+    min_interval_hours: 2
+    country: mexico
+    hours_old: 24
+    results_wanted: 25
+    searches:
+      - {term: "Angular", location: "México"}
+      - {term: "Frontend Senior", location: "México"}
+      - {term: "React Senior", location: "México"}
+  indeed_us:
+    enabled: true
+    min_interval_hours: 2
+    country: usa
+    hours_old: 24
+    results_wanted: 25
+    searches:
+      - {term: "Senior Frontend Engineer Latin America", remote: true}
+      - {term: "Frontend Developer remote LatAm", remote: true}
+  linkedin:
+    # Solo búsqueda pública (nunca inicia sesión). Más lento para no saturar.
+    enabled: true
+    min_interval_hours: 4
+    hours_old: 24
+    results_wanted: 20
+    searches:
+      - {term: "Senior Angular Developer", location: "Mexico"}
+      - {term: "Senior Frontend Engineer React", location: "Mexico"}
+      - {term: "Frontend Developer remote LatAm", location: "Latin America"}
+      - {term: "Senior Frontend Engineer", location: "Guadalajara, Jalisco, Mexico"}
+  google:
+    # Desactivado: el lector de Google Jobs de JobSpy devolvía 0 resultados (sept. 2026).
+    # Actívalo y corre `check-sources` para probarlo de nuevo.
+    enabled: false
+    min_interval_hours: 4
+    results_wanted: 20
+    searches:
+      - {term: "senior frontend developer remote mexico since yesterday"}
+      - {term: "senior angular developer remote latam since yesterday"}
+
+  # --- APIs públicas de ATS por empresa (verificadas en sept. 2026). Cómo agregar empresas: ver README. ---
+  greenhouse:
+    enabled: true
+    min_interval_hours: 6
+    companies:
+      - wizeline      # nearshore, México
+      - arionkoder    # nearshore, LatAm
+      - nearform
+      - xtillion
+      - thoughtworks
+      - turing        # remote contractors
+      - clara         # Mexico fintech
+      - gitlab
+      - remotecom
+      - grafanalabs
+      - canonical
+      - tailscale
+      - mattermost
+      - vercel
+      - launchdarkly
+      - contentful
+      - webflow
+      - oddball
+      - wikimedia
+  lever:
+    enabled: true
+    min_interval_hours: 6
+    companies:
+      - kavak         # Mexico
+  ashby:
+    enabled: true
+    min_interval_hours: 6
+    companies:
+      - andela        # remote contractors, LatAm
+      - belvo         # LatAm fintech
+      - posthog
+      - supabase
+      - linear
+      - n8n
+      - sanity
+      - replit
+      - zapier
+      - airbyte
+      - 1password
+      - close
+      - helpscout
+      - railway
+      - resend
+
+  # --- Bolsas de trabajo remoto (APIs públicas) ---
+  remotive:
+    # Remotive pide máximo ~4 consultas al día.
+    enabled: true
+    min_interval_hours: 6
+    category: software-dev
+  remoteok:
+    enabled: true
+    min_interval_hours: 4
+  computrabajo:
+    # ⚠️ DESACTIVADO por defecto. Computrabajo no tiene API, su aviso legal prohíbe el acceso automatizado y
+    # bloquea bots que se identifican como tales, así que job-radar lo lee con encabezados de navegador.
+    # Actívalo solo si aceptas ese riesgo (pueden bloquear tu IP).
+    enabled: false
+    min_interval_hours: 6
+    delay_seconds: 5          # pause between requests
+    max_details_per_run: 15   # job pages fetched per run (only new jobs that passed the prefilter)
+    searches:
+      - {term: angular}
+      - {term: react}
+      - {term: frontend}
+      - {term: desarrollador front end, location: jalisco}
+  himalayas:
+    # Ofertas remotas abiertas a tu país (filtro `country`, código ISO: MX, CO, AR...). Actualiza sus datos una
+    # vez al día. Sus términos piden enlazar a Himalayas y nombrarlo como fuente (el resumen de Telegram lo hace).
+    enabled: true
+    min_interval_hours: 24
+    country: MX
+    pages: 2        # 20 jobs per page, newest first
+    queries:
+      - frontend
+      - angular
+      - react
+  jobicy:
+    # Ofertas remotas por región (geos). Sus términos: dar crédito a Jobicy, usar su enlace y consultar máximo 1 vez/hora.
+    enabled: true
+    min_interval_hours: 6
+    count: 50
+    industry: engineering
+    geos:
+      - mexico
+      - latam
+  getonboard:
+    enabled: true
+    min_interval_hours: 4
+    per_page: 50
+    queries:
+      - angular
+      - react
+      - frontend

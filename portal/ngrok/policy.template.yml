@@ -1,0 +1,15 @@
+# ngrok Traffic Policy template for the job-radar portal tunnel.
+# scripts/install_tunnel.sh renders it to ngrok/policy.yml (gitignored) with the email(s) you pass.
+# Nothing reaches the portal unless the visitor signs in with Google (ngrok's managed OAuth app) as one of
+# those emails. Everyone else gets 403 at ngrok's edge, before touching your Mac.
+on_http_request:
+  - actions:
+      - type: oauth
+        config:
+          provider: google
+  - expressions:
+      - "!(actions.ngrok.oauth.identity.email in [__ALLOWED_EMAILS__])"
+    actions:
+      - type: deny
+        config:
+          status_code: 403

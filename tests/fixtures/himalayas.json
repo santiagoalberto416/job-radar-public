@@ -1,0 +1,182 @@
+{
+ "comments": "21/08/2026: Cursor pagination is now available and is the preferred way to page through the feed. Pass the nextCursor value from each response back as ?cursor=. It is faster than offset and will never return the same job twice. The offset parameter is deprecated and will be removed in a future release. 13/03/2026: The API has been updated to include the companySlug field in the response.",
+ "updatedAt": 1790627646,
+ "offset": 0,
+ "limit": 20,
+ "totalCount": 182,
+ "jobs": [
+  {
+   "title": "Lead Software Engineer (Golang/TypeScript/React) - Independent Contractor",
+   "excerpt": "Lead Software Engineer (Golang/TypeScript/React) Mexico City, Mexico – Remote.",
+   "companyName": "FXC Intelligence",
+   "companySlug": "fxcintel",
+   "companyLogo": "https://cdn-images.himalayas.app/u911g6hkksift4jjb40x0yldep57",
+   "employmentType": "Contractor",
+   "minSalary": null,
+   "maxSalary": null,
+   "salaryPeriod": "annual",
+   "seniority": [
+    "Senior"
+   ],
+   "currency": null,
+   "locationRestrictions": [
+    "Mexico"
+   ],
+   "timezoneRestrictions": [
+    -8,
+    -7,
+    -6,
+    -5
+   ],
+   "categories": [
+    "Software-Engineer",
+    "Full-Stack-Developer",
+    "Backend-Engineer"
+   ],
+   "parentCategories": [
+    "Developer"
+   ],
+   "description": "<p>Lead Software Engineer (Golang/TypeScript/React)</p><p>Mexico City, Mexico – Remote. -- <em>Please note that</em><em>while this role is remote, we require team members to be based in this region for periodic in-person meet-ups.</em></p><p>We are looking for a Lead Software Engineer to join our team, taking technical ownership of a high-impact, customer-facing product, which some of the world's biggest companies, central banks and non-governmental organisations use to build revenue and volume through data and analytics. This is an opportunity to influence technical direction, elevate enginee",
+   "pubDate": 1790564647,
+   "expiryDate": 1795748646,
+   "applicationLink": "https://himalayas.app/companies/fxcintel/jobs/lead-software-engineer-golang-typescript-react-independent-contractor-4936924527",
+   "guid": "https://himalayas.app/companies/fxcintel/jobs/lead-software-engineer-golang-typescript-react-independent-contractor-4936924527"
+  },
+  {
+   "title": "AI Infrastructure Full-Stack Developer (100 % remote) (m/f/d)",
+   "excerpt": "EWOR is launching cutting-edge new initiatives, and we are looking for exceptional operators and builders to join our new department.",
+   "companyName": "EWOR GmbH",
+   "companySlug": "ewor-gmbh",
+   "companyLogo": "https://cdn-images.himalayas.app/mzfjnameg78wsqgnqdccysf7eg22",
+   "employmentType": "Full Time",
+   "minSalary": null,
+   "maxSalary": null,
+   "salaryPeriod": "annual",
+   "seniority": [
+    "Senior"
+   ],
+   "currency": null,
+   "locationRestrictions": [],
+   "timezoneRestrictions": [
+    -11,
+    -10,
+    -9.5,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3.5,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    3.5,
+    4,
+    4.5,
+    5,
+    5.5,
+    5.75,
+    6,
+    6.5,
+    7,
+    8,
+    8.75,
+    9,
+    9.5,
+    10,
+    10.5,
+    11,
+    12,
+    12.75,
+    13,
+    14
+   ],
+   "categories": [
+    "Full-Stack-Developer",
+    "AI-Infrastructure-Engineer",
+    "Backend-Engineer"
+   ],
+   "parentCategories": [
+    "Developer"
+   ],
+   "description": "<p>EWOR is launching cutting-edge new initiatives, and we are looking for exceptional operators and builders to join our new department.</p><p>We are backed and led by serial entrepreneurs, including Paul Müller (founder of Adjust, €1.2B exit) and Petter Made (founder of SumUp, €8B), who have built high-impact technology and category-defining ventures from the ground up.</p><h3>What We Offer</h3><ul>\n<li><p><strong>Maximum ownership</strong>: Complete autonomy to architect systems, drive strategy, and build from 0 to 1 without corporate red tape.</p></li>\n<li><p><strong>High-growth environment",
+   "pubDate": 1790627646,
+   "expiryDate": 1798250830,
+   "applicationLink": "https://himalayas.app/companies/ewor-gmbh/jobs/ai-infrastructure-full-stack-developer-100-remote-m-f-d-1446705816",
+   "guid": "https://himalayas.app/companies/ewor-gmbh/jobs/ai-infrastructure-full-stack-developer-100-remote-m-f-d-1446705816"
+  },
+  {
+   "title": "Space Tech Full-Stack Developer (100 % remote) (m/f/d)",
+   "excerpt": "EWOR is launching cutting-edge new initiatives, and we are looking for exceptional operators and builders to join our new department.",
+   "companyName": "EWOR GmbH",
+   "companySlug": "ewor-gmbh",
+   "companyLogo": "https://cdn-images.himalayas.app/mzfjnameg78wsqgnqdccysf7eg22",
+   "employmentType": "Full Time",
+   "minSalary": null,
+   "maxSalary": null,
+   "salaryPeriod": "annual",
+   "seniority": [
+    "Senior"
+   ],
+   "currency": null,
+   "locationRestrictions": [],
+   "timezoneRestrictions": [
+    -11,
+    -10,
+    -9.5,
+    -9,
+    -8,
+    -7,
+    -6,
+    -5,
+    -4,
+    -3.5,
+    -3,
+    -2,
+    -1,
+    0,
+    1,
+    2,
+    3,
+    3.5,
+    4,
+    4.5,
+    5,
+    5.5,
+    5.75,
+    6,
+    6.5,
+    7,
+    8,
+    8.75,
+    9,
+    9.5,
+    10,
+    10.5,
+    11,
+    12,
+    12.75,
+    13,
+    14
+   ],
+   "categories": [
+    "Full-Stack-Developer",
+    "Software-Developer",
+    "Full-Stack-Engineer"
+   ],
+   "parentCategories": [
+    "Developer"
+   ],
+   "description": "<p>EWOR is launching cutting-edge new initiatives, and we are looking for exceptional operators and builders to join our new department.</p><p>We are backed and led by serial entrepreneurs, including Paul Müller (founder of Adjust, €1.2B exit) and Petter Made (founder of SumUp, €8B), who have built high-impact technology and category-defining ventures from the ground up.</p><h3>What We Offer</h3><ul>\n<li><p><strong>Maximum ownership</strong>: Complete autonomy to architect systems, drive strategy, and build from 0 to 1 without corporate red tape.</p></li>\n<li><p><strong>High-growth environment",
+   "pubDate": 1790526794,
+   "expiryDate": 1795710793,
+   "applicationLink": "https://himalayas.app/companies/ewor-gmbh/jobs/space-tech-full-stack-developer-100-remote-m-f-d",
+   "guid": "https://himalayas.app/companies/ewor-gmbh/jobs/space-tech-full-stack-developer-100-remote-m-f-d"
+  }
+ ]
+}

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Rendered by portal/scripts/install_portal.sh. Serves the job-radar portal on 127.0.0.1 only. -->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>__LABEL__</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>__NODE__</string>
+        <string>--disable-warning=ExperimentalWarning</string>
+        <string>--import</string>
+        <string>tsx</string>
+        <string>server/index.ts</string>
+    </array>
+    <key>WorkingDirectory</key>
+    <string>__PORTAL__</string>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>ThrottleInterval</key>
+    <integer>30</integer>
+    <key>StandardOutPath</key>
+    <string>__LOG__</string>
+    <key>StandardErrorPath</key>
+    <string>__LOG__</string>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PORTAL_PORT</key>
+        <string>__PORT__</string>
+        <key>JOB_RADAR_LABEL_PREFIX</key>
+        <string>__PREFIX__</string>
+        <key>PATH</key>
+        <string>/usr/bin:/bin:/usr/sbin:/sbin</string>
+    </dict>
+</dict>
+</plist>

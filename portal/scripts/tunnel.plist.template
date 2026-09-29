@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Rendered by portal/scripts/install_tunnel.sh. ngrok tunnel to the portal, ALWAYS with the Google-login policy. -->
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>__LABEL__</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>__NGROK__</string>
+        <string>http</string>
+        <string>http://127.0.0.1:__PORT__</string>
+        <string>--url</string>
+        <string>https://__DOMAIN__</string>
+        <string>--traffic-policy-file</string>
+        <string>__POLICY__</string>
+        <string>--inspect=false</string>
+        <string>--log</string>
+        <string>stdout</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+    <key>ThrottleInterval</key>
+    <integer>30</integer>
+    <key>StandardOutPath</key>
+    <string>__LOG__</string>
+    <key>StandardErrorPath</key>
+    <string>__LOG__</string>
+</dict>
+</plist>

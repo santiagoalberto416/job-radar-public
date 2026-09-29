@@ -1,0 +1,405 @@
+{
+ "data": [
+  {
+   "id": "senior-front-end-developer-tcit-santiago-be67",
+   "type": "job",
+   "attributes": {
+    "title": "Senior Front-end Developer",
+    "description_headline": "Requisitos Técnicos",
+    "description": "<p><strong>Obligatorios</strong></p><ul><li>4+ años desarrollando aplicaciones frontend.</li><li>Experiencia sólida con Vue.</li><li>JavaScript ES6+ y TypeScript.</li><li>HTML5 y CSS3.</li><li>Manejo de estado (Pinia o Vuex).</li><li>Consumo de APIs REST.</li><li>Git y flujo colaborativo de desarrollo.</li><li>Experiencia trabajando bajo metodologías ágiles (Scrum).</li></ul>",
+    "projects": "<p>En TCIT transformamos digitalmente a distintas organizaciones mediante soluciones de software de calidad, sostenibles e innovadoras, desarrolladas con metodologías ágiles y tecnologías Cloud de última generación. Con más de 9 años de experiencia, hemos construido software para múltiples rubros (gestión agrícola, remates en línea, gestión de causas para tribunales, monitoreo de certificaciones para trabajadores mineros, liquidaciones de sueldo y otras soluciones de gestión para transporte y bodegaje). Nuestro enfoque es potenciar el talento y participar en proyectos con impacto real, incluye",
+    "functions_headline": "Responsabilidades",
+    "functions": "<ul><li>Desarrollar nuevas funcionalidades utilizando Vue.js.</li><li>Diseñar y mantener componentes reutilizables y Design Systems.</li><li>Integrar APIs REST y servicios backend.</li><li>Participar en definiciones de arquitectura frontend.</li><li>Garantizar calidad mediante pruebas unitarias, integración y E2E.</li><li>Optimizar rendimiento, accesibilidad y experiencia de usuario.</li><li>Colaborar estrechamente con UX, Backend y Product Owners.</li><li>Participar en revisiones de código y mentoring técnico.</li><li>Contribuir a pipelines CI/CD y buenas prácticas de desarrollo.</li><li>Iden",
+    "benefits_headline": "Modalidad",
+    "benefits": "<p>Modalidad hibrida en la comuna de las Condes, cercano a metro Tobalaba. <br>Horario: Lunes a Jueves 09:00 a 18:30 y Viernes 09:00 a 18:00 hrs, 60 minutos de colación. </p>",
+    "desirable_headline": "",
+    "desirable": "",
+    "remote": false,
+    "remote_modality": "hybrid",
+    "remote_zone": null,
+    "countries": [
+     "Chile"
+    ],
+    "lang": "lang_not_specified",
+    "rejected_reasons": [
+     {
+      "insufficient_project_info": {
+       "title": "Insufficient project info",
+       "description": "It is important for those who apply for a job to have total clarity about the area in which they will eventually join or the project in which they will collaborate. We recommend that you include details about the type of projects they will be assigned to, what roles or people they will be working with, if these projects include dealing with clients or not and what type of clients. Ads that include these details have a higher success rate."
+      }
+     }
+    ],
+    "category_name": "Programming",
+    "perks": [
+     "remote_partial",
+     "health_coverage",
+     "computer_provided",
+     "beverages_and_snacks"
+    ],
+    "min_salary": 1900,
+    "max_salary": 2500,
+    "published_at": 1790196632,
+    "response_time_in_days": {
+     "min": null,
+     "max": null
+    },
+    "applications_count": 39,
+    "location_regions": {
+     "data": []
+    },
+    "location_tenants": {
+     "data": []
+    },
+    "location_cities": {
+     "data": [
+      {
+       "id": 1,
+       "type": "location_city"
+      }
+     ]
+    },
+    "modality": {
+     "data": {
+      "id": 1,
+      "type": "modality"
+     }
+    },
+    "seniority": {
+     "data": {
+      "id": 4,
+      "type": "seniority"
+     }
+    },
+    "tags": {
+     "data": [
+      {
+       "id": 1,
+       "type": "tag"
+      },
+      {
+       "id": 11,
+       "type": "tag"
+      },
+      {
+       "id": 12,
+       "type": "tag"
+      },
+      {
+       "id": 53,
+       "type": "tag"
+      },
+      {
+       "id": 135,
+       "type": "tag"
+      },
+      {
+       "id": 138,
+       "type": "tag"
+      },
+      {
+       "id": 259,
+       "type": "tag"
+      },
+      {
+       "id": 37059,
+       "type": "tag"
+      },
+      {
+       "id": 38725,
+       "type": "tag"
+      }
+     ]
+    },
+    "company": {
+     "data": {
+      "id": "tcit",
+      "type": "company",
+      "attributes": {
+       "name": "TCIT",
+       "description": "Líderes en desarrollo de software en modalidad cloud",
+       "long_description": "<p>Nuestro propósito en TCIT es transformar digitalmente a distintas organizaciones a través de soluciones de calidad, sostenibles e innovadoras. Trabajamos con metodologías ágiles, utilizamos tecnolo",
+       "projects": "<div>En TCIT lideramos proyectos de desarrollo de software en modalidad cloud para clientes en diversos rubros, con foco en soluciones de calidad, sostenibles e innovadoras. Trabajamos con metodología",
+       "benefits": "<p>- Modalidad de trabajo presencial en la comuna de Providencia.&nbsp;<br>- Horario de 44 horas semanales: L a J 8:00 - 18:00 V 8:00 - 17:00&nbsp;</p>",
+       "web": "http://www.tcit.cl",
+       "twitter": "",
+       "github": "",
+       "facebook": "",
+       "angellist": "",
+       "country": "CL",
+       "response_time_in_days": {
+        "min": 14,
+        "max": 24
+       },
+       "logo": "https://getonbrd-prod.s3.amazonaws.com/uploads/users/logo/2314/TCIT_isotipo-color.png"
+      }
+     }
+    }
+   },
+   "links": {
+    "public_url": "https://www.getonbrd.com/jobs/senior-front-end-developer-tcit-santiago-be67"
+   }
+  },
+  {
+   "id": "software-engineer-semi-senior-buho-remote",
+   "type": "job",
+   "attributes": {
+    "title": "Software Engineer Semi Senior",
+    "description_headline": "Requerimientos del cargo",
+    "description": "<ul><li>Ingeniería Civil en Informática/Computación, o experiencia equivalente que la respalde.</li><li>Entre 3 y 5 años de experiencia como software engineer o fullstack construyendo y manteniendo productos en producción.</li><li>Sólido manejo de backend y frontend: <strong>Node.js / TypeScript</strong>, <strong>React</strong> y bases de datos relacionales (<strong>SQL / PostgreSQL</strong>).</li><li>Experiencia diseñando y consumiendo APIs e integraciones con servicios de terceros.</li><li>Comodidad con infraestructura cloud y despliegues (GCP, Vercel o similares).</li><li>Mentalidad de prod",
+    "projects": "<p>En Búho somos la primera plataforma de medicamentos smart de Chile, que optimiza la compra y despacho de tus productos de farmacia. Nuestro foco está en mejorar el bienestar de las personas a través de soluciones tecnológicas innovadoras dentro del ecosistema de la salud. Comparamos precios en múltiples farmacias, compramos cada producto en la farmacia más conveniente, y te entregamos todo al mejor precio en un solo pedido a la puerta de tu casa. Nuestro modelo de optimización y de compra inteligente es lo que hace de Búho la plataforma líder de ahorros en el mercado farmacéutico </p><div>F",
+    "functions_headline": "Funciones del cargo",
+    "functions": "<div>Buscamos a nuestro próximo/a Software Engineer Semi Senior: alguien que no solo escribe código, sino que entiende el negocio, conversa con las distintas áreas y toma ownership de principio a fin. Alguien que detecte oportunidades donde otros ven ruido, proponga iniciativas de alto impacto y las lleve a producción de manera autónoma.</div><div><strong>¿Qué harás?</strong></div><ul><li><strong>Detectar oportunidades de impacto:</strong> colaborar de cerca con growth, operaciones, comercial, farmacia y data para entender sus problemas y traducirlos en iniciativas técnicas que muevan las métr",
+    "benefits_headline": "Condiciones",
+    "benefits": "<div>En Búho valoramos a las personas por sobre todo y creamos un ambiente donde tengas autonomía, un propósito claro y que te sientas valorado por tu trabajo.</div><ul><li>Ser parte de una startup innovadora que está transformando la salud en Chile, y con un propósito ligado al bienestar de todos.</li><li>Impacto real: lo que construyas llega directo a los usuarios y a las métricas del negocio.</li><li>Cultura dinámica, colaborativa y horizontal.</li><li>Trabajar con equipo orientado en nuestros valores, diversidad, comunicación y energía.</li></ul><div><strong>Beneficios que te cuidan:</stro",
+    "desirable_headline": "Opcionales",
+    "desirable": "<ul><li>Experiencia con herramientas de analítica y experimentación (PostHog, Google Analytics), instrumentación de métricas de producto y cultura de A/B testing.</li></ul>",
+    "remote": true,
+    "remote_modality": "remote_local",
+    "remote_zone": null,
+    "countries": [
+     "Remote"
+    ],
+    "lang": "es",
+    "rejected_reasons": [
+     {
+      "contact_info": {
+       "title": "Contact info",
+       "description": "In Get on Board, candidates apply using our platform only. Please don't include direct contact info or instructions to apply outside Get on Board."
+      }
+     }
+    ],
+    "category_name": "Programming",
+    "perks": [
+     "health_coverage",
+     "computer_provided",
+     "informal_dresscode",
+     "vacation_over_legal"
+    ],
+    "min_salary": 2300,
+    "max_salary": 2500,
+    "published_at": 1790370183,
+    "response_time_in_days": {
+     "min": null,
+     "max": null
+    },
+    "applications_count": 82,
+    "location_regions": {
+     "data": []
+    },
+    "location_tenants": {
+     "data": [
+      {
+       "id": 1,
+       "type": "location_tenant"
+      }
+     ]
+    },
+    "location_cities": {
+     "data": []
+    },
+    "modality": {
+     "data": {
+      "id": 1,
+      "type": "modality"
+     }
+    },
+    "seniority": {
+     "data": {
+      "id": 3,
+      "type": "seniority"
+     }
+    },
+    "tags": {
+     "data": [
+      {
+       "id": 51,
+       "type": "tag"
+      },
+      {
+       "id": 58,
+       "type": "tag"
+      },
+      {
+       "id": 123,
+       "type": "tag"
+      },
+      {
+       "id": 225,
+       "type": "tag"
+      },
+      {
+       "id": 259,
+       "type": "tag"
+      },
+      {
+       "id": 1658,
+       "type": "tag"
+      },
+      {
+       "id": 36886,
+       "type": "tag"
+      }
+     ]
+    },
+    "company": {
+     "data": {
+      "id": "buho",
+      "type": "company",
+      "attributes": {
+       "name": "Búho",
+       "description": "Búho ofrece soluciones tecnológicas enfocadas en el ecosistema de salud para mejorar el bienestar de las personas. Tenemos la primera plataforma con optimización en la compra y delivery de medicamento",
+       "long_description": "",
+       "projects": "<p>En Búho (<a href=\"http://www.buhochile.com\">www.buhochile.com</a>)&nbsp; somos la primera plataforma de medicamentos smart de Chile,&nbsp; que optimiza la compra y despacho de tus productos de farm",
+       "benefits": "<p>En Búho valoramos a las personas por sobre todo y creamos un ambiente donde tengas autonomía, un propósito claro y que te sientas valorado por tu trabajo.&nbsp;<br><br></p><ul><li>Ser parte de una ",
+       "web": "http://buhochile.com",
+       "twitter": null,
+       "github": null,
+       "facebook": null,
+       "angellist": null,
+       "country": "CL",
+       "response_time_in_days": {
+        "min": 27,
+        "max": 41
+       },
+       "logo": "https://getonbrd-prod.s3.amazonaws.com/uploads/users/logo/14693/Isotipo_B%C3%BAho_Azul(2).png"
+      }
+     }
+    }
+   },
+   "links": {
+    "public_url": "https://www.getonbrd.com/jobs/software-engineer-semi-senior-buho-remote"
+   }
+  },
+  {
+   "id": "desarrollador-a-full-stack-direccion-chilecompra-santiago-6f7b",
+   "type": "job",
+   "attributes": {
+    "title": "Desarrollador(a) Full-Stack",
+    "description_headline": "Requerimientos del Cargo",
+    "description": "<p> Título profesional obtenido de una carrera de al menos 8 semestres de duración del ámbito de la Ingeniería Informática o carrera afín, de una institución reconocida por el Estado de Chile.</p><ul><li><strong>Experiencia laboral mínima requerida:</strong></li></ul><p> Al menos 3 años participando en equipos de desarrollo de software bajo metodologías ágiles en organizaciones públicas o privadas. </p><ul><li><strong>Experiencia laboral deseable:</strong></li></ul><p>Al menos 1 año de experiencia en roles de desarrollador(a) full stack, en organizaciones públicas o privadas.</p>",
+    "projects": "<p>La plataforma de compras públicas que administra ChileCompra: Mercado Público, <strong>es el sitio transaccional de comercio electrónico más grande de Chile</strong>. Allí los servicios públicos efectúan sus adquisiciones a través de casi 2 millones de orden de compra al año, por más de 16 mil millones de dólares, permitiendo oportunidades de negocio a más de 120 mil proveedores. <strong>Por lo que nuestro servicio es crítico para el funcionamiento del Estado de Chile.</strong></p><p>Actualmente, estamos impulsando una estrategia de <strong>modernización para generar mayor eficiencia en las",
+    "functions_headline": "Funciones del Cargo",
+    "functions": "<p>El rol se enfoca en el <strong>diseño e implementación de productos para la plataforma de compras públicas, resolviendo las necesidades del negocio, de los usuarios (internos y externos) y ajustándose a los lineamientos y valores institucionales</strong>. Para ello deberá:</p><ol><li> Diseñar, desarrollar e implementar soluciones de software en los proyectos asignados, asegurando su funcionamiento, calidad y alineación con los requerimientos definidos. <ol><li> Levantar y comprender reglas y procesos de negocio que sustentan las necesidades de usuarios y requerimientos funcionales. </li><li",
+    "benefits_headline": "Condiciones",
+    "benefits": "<ul><li>La modalidad de contratación es a<strong> contrata con renovación anual, según evaluación de desempeño.</strong></li><li>La modalidad de trabajo es <strong>presencial.</strong></li><li>Contamos con <strong>15 días de vacaciones más 6 días de permisos</strong> administrativos con goce de sueldo, <strong>anuales.</strong></li><li><strong>Consideramos la hora de colación dentro de la jornada laboral</strong>, y tenemos una banda de ingreso flexible, <strong>desde las 07:30hrs hasta las 09:30hrs.</strong></li><li>La posición tiene una <strong>renta bruta mensual grado 13 EFS, correspondien",
+    "desirable_headline": "Tecnologías y Herramientas",
+    "desirable": "<ul><li><strong>Conocimientos mínimos:</strong></li></ul><p>- Desarrollo Front-End utilizando tecnologías como React y Angular.<br>- Desarrollo Back-End con Java, Spring Boot y arquitecturas Serverless en entornos Cloud.<br>- Desarrollo en tecnologías .NET, incluyendo C#, VB.NET y Node.js.<br>- Metodologías y herramientas de implementación de software, tales como infraestructura como código (IaC), herramientas de empaquetado, despliegue, configuración y monitoreo.<br>- Manejo de herramientas de gestión de proyectos, especialmente Jira.<br>- Desarrollo sobre plataformas Cloud, utilizando servic",
+    "remote": false,
+    "remote_modality": "no_remote",
+    "remote_zone": null,
+    "countries": [
+     "Chile"
+    ],
+    "lang": "es",
+    "rejected_reasons": [],
+    "category_name": "Programming",
+    "perks": [
+     "wellness",
+     "flexible_hours",
+     "internal_talks",
+     "computer_provided",
+     "performance_bonus",
+     "conference_stipend"
+    ],
+    "min_salary": 3100,
+    "max_salary": 3100,
+    "published_at": 1790284125,
+    "response_time_in_days": {
+     "min": null,
+     "max": null
+    },
+    "applications_count": 52,
+    "location_regions": {
+     "data": []
+    },
+    "location_tenants": {
+     "data": []
+    },
+    "location_cities": {
+     "data": [
+      {
+       "id": 1,
+       "type": "location_city"
+      }
+     ]
+    },
+    "modality": {
+     "data": {
+      "id": 1,
+      "type": "modality"
+     }
+    },
+    "seniority": {
+     "data": {
+      "id": 3,
+      "type": "seniority"
+     }
+    },
+    "tags": {
+     "data": [
+      {
+       "id": 225,
+       "type": "tag"
+      },
+      {
+       "id": 235,
+       "type": "tag"
+      },
+      {
+       "id": 1947,
+       "type": "tag"
+      },
+      {
+       "id": 4060,
+       "type": "tag"
+      },
+      {
+       "id": 37269,
+       "type": "tag"
+      },
+      {
+       "id": 37284,
+       "type": "tag"
+      },
+      {
+       "id": 37819,
+       "type": "tag"
+      }
+     ]
+    },
+    "company": {
+     "data": {
+      "id": "direccion-chilecompra",
+      "type": "company",
+      "attributes": {
+       "name": "Dirección ChileCompra",
+       "description": "Innovación y Compromiso con impacto público.\n\n\n¡Sé parte de la modernización del Estado en ChileCompra!",
+       "long_description": "<p>La Dirección ChileCompra es la institución que administra la plataforma de compras públicas de Chile, <a href=\"http://www.mercadopublico.cl/\" target=\"_blank\" rel=\"nofollow noopener noreferrer exter",
+       "projects": "<p>La plataforma de compras públicas que administra ChileCompra: <a href=\"http://www.mercadopublico.cl/\"><strong>www.mercadopublico.cl</strong></a><strong> es el sitio transaccional de comercio electr",
+       "benefits": "<ul><li>Oportunidad para aprender y aportar tus conocimientos a la plataforma transaccional más importante de Chile</li><li>Ambiente laboral respetuoso donde se anima la participación activa</li><li>A",
+       "web": "https://www.chilecompra.cl/",
+       "twitter": "",
+       "github": "",
+       "facebook": "",
+       "angellist": "",
+       "country": "CL",
+       "response_time_in_days": {
+        "min": 25,
+        "max": 35
+       },
+       "logo": "https://getonbrd-prod.s3.amazonaws.com/uploads/users/logo/11748/Logo_ChileCompra.jpg"
+      }
+     }
+    }
+   },
+   "links": {
+    "public_url": "https://www.getonbrd.com/jobs/desarrollador-a-full-stack-direccion-chilecompra-santiago-6f7b"
+   }
+  }
+ ],
+ "meta": {
+  "page": 1,
+  "per_page": 3,
+  "total_pages": 55
+ }
+}

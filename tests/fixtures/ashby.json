@@ -1,0 +1,89 @@
+{
+ "jobs": [
+  {
+   "id": "9829c4f1-548f-4ef9-b4a2-c0ba2e11b90c",
+   "title": "Staff Fullstack Engineer",
+   "department": "Product & Engineering",
+   "team": "Engineering",
+   "employmentType": "FullTime",
+   "location": "North America",
+   "secondaryLocations": [],
+   "publishedAt": "2026-03-04T20:00:29.167+00:00",
+   "isListed": true,
+   "isRemote": true,
+   "workplaceType": "Remote",
+   "address": {
+    "postalAddress": {
+     "addressCountry": "United States"
+    }
+   },
+   "jobUrl": "https://jobs.ashbyhq.com/andela/9829c4f1-548f-4ef9-b4a2-c0ba2e11b90c",
+   "applyUrl": "https://jobs.ashbyhq.com/andela/9829c4f1-548f-4ef9-b4a2-c0ba2e11b90c/application",
+   "descriptionHtml": "<p style=\"min-height:1.5em\"><strong>Staff Full Stack Engineer</strong><br /><strong>About Andela:</strong><br />At Andela, we know brilliance is evenly distributed around the world, but opportunity is not. For over 10 years, Andela has connected its customers with top global, remote technical talent from over 135 countries with the majority residing in emerging markets like Africa and Latin America.</p><p style=\"min-height:1.5em\">As one of the world’s largest talent marketplaces, Andela gives companies greater flexibility to quickly deploy qualified technologists. With talent highly skilled in",
+   "descriptionPlain": "Staff Full Stack Engineer\nAbout Andela:\nAt Andela, we know brilliance is evenly distributed around the world, but opportunity is not. For over 10 years, Andela has connected its customers with top global, remote technical talent from over 135 countries with the majority residing in emerging markets like Africa and Latin America.\n\nAs one of the world’s largest talent marketplaces, Andela gives companies greater flexibility to quickly deploy qualified technologists. With talent highly skilled in advanced technologies to support Application Development, Artificial Intelligence, Cloud & DevOps, Da"
+  },
+  {
+   "id": "16a17f6a-36fb-4b7a-858e-3f1da7b68b1f",
+   "title": "AI Solutions Manager",
+   "department": "Solutions",
+   "team": "AI Incubation",
+   "employmentType": "FullTime",
+   "location": "North America",
+   "secondaryLocations": [
+    {
+     "location": "Canada",
+     "address": {
+      "postalAddress": {
+       "addressCountry": "Canada"
+      }
+     }
+    },
+    {
+     "location": "United Kingdom",
+     "address": {
+      "postalAddress": {
+       "addressCountry": "United Kingdom",
+       "addressLocality": "London"
+      }
+     }
+    }
+   ],
+   "publishedAt": "2025-12-11T09:36:58.488+00:00",
+   "isListed": true,
+   "isRemote": true,
+   "workplaceType": "Remote",
+   "address": {
+    "postalAddress": {
+     "addressCountry": "United States"
+    }
+   },
+   "jobUrl": "https://jobs.ashbyhq.com/andela/16a17f6a-36fb-4b7a-858e-3f1da7b68b1f",
+   "applyUrl": "https://jobs.ashbyhq.com/andela/16a17f6a-36fb-4b7a-858e-3f1da7b68b1f/application",
+   "descriptionHtml": "<p style=\"min-height:1.5em\"><strong>AI Solutions Manager</strong></p><p style=\"min-height:1.5em\"><strong>About Andela:</strong></p><p style=\"min-height:1.5em\">At Andela, we know brilliance is evenly distributed around the world, but opportunity is not. For over 10 years, Andela has connected its customers with top global, remote technical talent from over 135 countries with the majority residing in emerging markets like Africa and Latin America.</p><p style=\"min-height:1.5em\">As one of the world’s largest talent marketplaces, Andela gives companies greater flexibility to quickly deploy qualifi",
+   "descriptionPlain": "AI Solutions Manager\n\nAbout Andela:\n\nAt Andela, we know brilliance is evenly distributed around the world, but opportunity is not. For over 10 years, Andela has connected its customers with top global, remote technical talent from over 135 countries with the majority residing in emerging markets like Africa and Latin America.\n\nAs one of the world’s largest talent marketplaces, Andela gives companies greater flexibility to quickly deploy qualified technologists. With talent highly skilled in advanced technologies to support Application Development, Artificial Intelligence, Cloud & DevOps, Data "
+  },
+  {
+   "id": "aec096bd-de6f-46ed-9705-5ee811ce4941",
+   "title": "Product Designer",
+   "department": "Product & Engineering",
+   "team": "Design",
+   "employmentType": "FullTime",
+   "location": "North America",
+   "secondaryLocations": [],
+   "publishedAt": "2026-03-12T18:35:26.462+00:00",
+   "isListed": true,
+   "isRemote": true,
+   "workplaceType": "Remote",
+   "address": {
+    "postalAddress": {
+     "addressCountry": "United States"
+    }
+   },
+   "jobUrl": "https://jobs.ashbyhq.com/andela/aec096bd-de6f-46ed-9705-5ee811ce4941",
+   "applyUrl": "https://jobs.ashbyhq.com/andela/aec096bd-de6f-46ed-9705-5ee811ce4941/application",
+   "descriptionHtml": "<p style=\"min-height:1.5em\"><strong>Staff Product Designer</strong><br /><strong>About Andela:</strong></p><p style=\"min-height:1.5em\">At Andela, we know brilliance is evenly distributed around the world, but opportunity is not. For over 10 years, Andela has connected its customers with top global, remote technical talent from over 135 countries with the majority residing in emerging markets like Africa and Latin America.</p><p style=\"min-height:1.5em\">As one of the world’s largest talent marketplaces, Andela gives companies greater flexibility to quickly deploy qualified technologists. With t",
+   "descriptionPlain": "Staff Product Designer\nAbout Andela:\n\nAt Andela, we know brilliance is evenly distributed around the world, but opportunity is not. For over 10 years, Andela has connected its customers with top global, remote technical talent from over 135 countries with the majority residing in emerging markets like Africa and Latin America.\n\nAs one of the world’s largest talent marketplaces, Andela gives companies greater flexibility to quickly deploy qualified technologists. With talent highly skilled in advanced technologies to support Application Development, Artificial Intelligence, Cloud & DevOps, Data"
+  }
+ ],
+ "apiVersion": "1"
+}

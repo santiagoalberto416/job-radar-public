@@ -34,6 +34,20 @@ fuentes ─► normaliza ─► quita duplicados (SQLite) ─► filtro de palab
   como app en el iPhone.
 - **Control de costo:** estima tu saldo de Claude y te avisa cuando se está acabando.
 
+### ¿Por qué Telegram y no WhatsApp?
+
+WhatsApp no tiene bots gratuitos como Telegram. La única vía oficial es la API de negocios de Meta (WhatsApp Cloud
+API), y no la usamos porque:
+
+- **Cuesta:** los mensajes que envía el sistema por su cuenta (como el resumen de las 7:00) tienen que ser
+  plantillas aprobadas por Meta y se cobran por mensaje. Solo es gratis responder dentro de las 24 horas después
+  de que tú escribas.
+- **Es difícil de implementar:** requiere cuenta de desarrollador y de negocio en Meta, un número dedicado,
+  aprobar plantillas y un webhook público para recibir comandos.
+
+Las alternativas no oficiales (conectarse como si fuera WhatsApp Web) van contra los términos de WhatsApp y pueden
+hacer que bloqueen tu número. Telegram es gratis, sin plantillas ni ventanas de 24 horas, y sus bots son oficiales.
+
 ## Requisitos
 
 | Necesitas | Para qué | Notas |

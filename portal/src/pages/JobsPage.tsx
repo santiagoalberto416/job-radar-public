@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import type { JobsPage as JobsPageData, JobStatus } from "../../shared/types";
-import { api, timeAgo } from "../api";
+import { api, timeAgo, usdMonth } from "../api";
 import JobDrawer from "../components/JobDrawer";
 import { JobStatusPill } from "../components/jobStatus";
 import ScoreBadge from "../components/ScoreBadge";
@@ -11,12 +11,14 @@ const VIEWS: { key: string; label: string; status: JobStatus; sort: "score" | "r
   { key: "best", label: "⭐ Mejores", status: "matches", sort: "score" },
   { key: "latest", label: "🆕 Últimas", status: "relevant", sort: "recent" },
   { key: "sent", label: "📨 Enviadas", status: "sent", sort: "recent" },
+  { key: "tracking", label: "🗂️ Postulaciones", status: "tracking", sort: "recent" },
   { key: "all", label: "Todas", status: "all", sort: "recent" },
 ];
 
 const STATUSES: { value: JobStatus; label: string }[] = [
   { value: "matches", label: "Coincidencias (≥ puntaje mínimo)" },
   { value: "relevant", label: "Relevantes (pasaron el filtro)" },
+  { value: "tracking", label: "Postulaciones y 👍" },
   { value: "waiting", label: "Por enviar" },
   { value: "sent", label: "Enviadas" },
   { value: "scored", label: "Calificadas" },
@@ -136,6 +138,7 @@ export default function JobsPage() {
                 <div className="muted small">{job.company}</div>
               </div>
             </div>
+            {job.salary_usd_month ? <div className="small" style={{ marginTop: 6 }}>💰 {usdMonth(job.salary_usd_low, job.salary_usd_month)}</div> : null}
             {job.reason && <div className="small" style={{ marginTop: 6 }}>{job.reason}</div>}
             <div className="row small muted" style={{ marginTop: 8 }}>
               <JobStatusPill job={job} />
@@ -170,7 +173,10 @@ export default function JobsPage() {
                 </td>
                 <td>
                   <strong>{job.title}</strong>
-                  <div className="muted small">{job.company}</div>
+                  <div className="muted small">
+                    {job.company}
+                    {job.salary_usd_month ? ` · 💰 ${usdMonth(job.salary_usd_low, job.salary_usd_month)}` : ""}
+                  </div>
                   {job.reason && <div className="small">{job.reason}</div>}
                 </td>
                 <td className="hide-sm small">{job.location}</td>

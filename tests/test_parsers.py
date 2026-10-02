@@ -135,3 +135,18 @@ def test_jobicy_regions_go_through_location_prefilter(load_fixture):
     assert check("Remote (Argentina)") == (False, "location excludes 'argentina'")
     assert check("Remote (Mexico)")[0] is True
     assert check("Remote (EMEA, LATAM, Canada, USA)")[0] is True  # LATAM allowed wins over Canada
+
+
+def test_workingnomads_keeps_development_only(load_fixture):
+    from job_radar.sources.boards import parse_workingnomads
+
+    data = load_fixture("workingnomads")
+    jobs = parse_workingnomads(data, ["Development"])
+    assert len(jobs) == 3 and len(data) == 4  # the non-Development item is skipped
+    job = jobs[0]
+    assert job.source == "workingnomads" and job.remote is True
+    assert job.title == data[0]["title"].strip() and job.company == data[0]["company_name"].strip()
+    assert job.location.startswith("Remote (") and job.url.startswith("https://www.workingnomads.com/job/")
+    assert job.external_id and job.external_id.isdigit()
+    assert job.posted_at and "<p>" not in job.description
+    assert len(parse_workingnomads(data, [])) == 4  # no category filter: everything

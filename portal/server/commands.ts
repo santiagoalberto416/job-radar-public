@@ -22,6 +22,11 @@ export const COMMANDS: (Omit<CommandInfo, "cli"> & { args: string[] })[] = [
     description: "Gasto de Claude y saldo estimado." },
   { id: "credit-send", writesDb: true, label: "Enviar crédito a Telegram", args: ["credit", "--send"], sendsTelegram: true, costs: false,
     description: "Lo mismo, y lo envía a Telegram (cuenta como el mensaje del día)." },
+  { id: "weekly", writesDb: false, label: "Resumen semanal", args: ["weekly"], sendsTelegram: false, costs: false,
+    description: "Resumen de los últimos 7 días (el mismo que llega los lunes a las 7:00)." },
+  { id: "filter-report", writesDb: false, label: "Revisar el filtro de palabras", args: ["filter-report"],
+    sendsTelegram: false, costs: false,
+    description: "Títulos que el filtro descartó y quizá te interesan, y exclusiones que chocan con tus palabras." },
   { id: "top", writesDb: false, label: "Top 7 días", args: ["top", "--days", "7"], sendsTelegram: false, costs: false,
     description: "Las mejores ofertas de la última semana." },
   { id: "skills", writesDb: false, label: "Skills (solo números)", args: ["skills", "--no-llm"], sendsTelegram: false, costs: false,
@@ -96,7 +101,7 @@ export class CommandRunner {
   }
 }
 
-/** Remote (tunnel) visitors may run a command only if it doesn't write to the database. */
+/** Remote (tunnel) visitors, already authenticated by the tunnel's email allowlist, may run any listed command. */
 export function runnableRemotely(commandId: string): boolean {
-  return COMMANDS.find((c) => c.id === commandId)?.writesDb === false;
+  return COMMANDS.some((c) => c.id === commandId);
 }

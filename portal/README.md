@@ -33,24 +33,24 @@ vuelve a correr el script. Otro puerto: `PORTAL_PORT=5050 portal/scripts/install
 
 | Página | Qué hace |
 |---|---|
-| **Ofertas** | Todas las ofertas de `data/jobs.db`. Vistas rápidas (⭐ Mejores, 🆕 Últimas, 📨 Enviadas, Todas), búsqueda y filtros por estado, fuente y fecha. Al tocar una ves el detalle: por qué la calificó Claude, alertas y la descripción |
+| **Ofertas** | Todas las ofertas de `data/jobs.db`. Vistas rápidas (⭐ Mejores, 🆕 Últimas, 📨 Enviadas, 🗂️ Postulaciones, Todas), búsqueda y filtros por estado, fuente y fecha. Al tocar una ves el detalle: por qué la calificó Claude, alertas y la descripción, y puedes marcar 👍/👎, la etapa de tu postulación y notas |
 | **Estado** | Los servicios de launchd, la última búsqueda, totales, crédito estimado de Claude, estado de cada fuente y el log. Botones para buscar ahora y reiniciar el bot |
 | **Comandos** | Los comandos de la línea de comandos (una lista fija, con la salida en vivo) y los del bot de Telegram |
 | **Configuración** | Formulario para lo común (puntaje, horario, modelo, crédito, fuentes), `config.yaml` completo y `profile.md`. El formulario cambia solo los valores: los comentarios y el formato del archivo se conservan |
 | **Entorno (.env)** | Qué claves están puestas (enmascaradas); reemplazarlas o agregar variables. El archivo queda con permisos 600. Reinicia el bot después de cambiar una clave que use |
 
-El portal lee la base de datos pero nunca la modifica. Las búsquedas leen `config.yaml`, `profile.md` y `.env` en
+El portal solo escribe en la base de datos tu opinión (👍/👎), la etapa de tus postulaciones y tus notas. Las búsquedas leen `config.yaml`, `profile.md` y `.env` en
 cada corrida, así que los cambios aplican desde la siguiente.
 
-## Acceso desde el celular (ngrok, solo lectura)
+## Acceso desde el celular (ngrok, con login de Google)
 
 Puedes abrir el portal desde cualquier lugar a través de un túnel de ngrok. Protecciones:
 
 - **Login en ngrok:** nadie pasa sin iniciar sesión con Google con uno de los correos que autorices. Los demás
   reciben 403 en los servidores de ngrok, antes de llegar a tu Mac.
-- **Solo lectura:** por el túnel puedes ver todo y ejecutar los comandos que no escriben en la base de datos
-  (`check-sources`, `test-telegram`, `credit`, `top`, `skills --no-llm`), pero no cambiar `.env`, la configuración
-  ni el perfil, ni ejecutar búsquedas. La interfaz muestra "remoto · solo lectura".
+- **Sin editar archivos:** por el túnel puedes ver todo, ejecutar cualquier comando (incluido *Buscar ahora*),
+  reiniciar el bot y marcar 👍/👎, postulaciones y notas, pero no cambiar `.env`, la configuración ni el perfil. La
+  interfaz muestra "remoto".
 - **Siempre con login:** el script no abre el túnel si la política no tiene las reglas de login, correo y bloqueo.
 
 ```bash

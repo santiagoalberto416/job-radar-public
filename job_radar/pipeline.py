@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import fcntl
 import logging
+import sqlite3
 import time as time_module
 from contextlib import contextmanager
 from dataclasses import dataclass, field
@@ -11,10 +12,11 @@ from datetime import datetime, time, timedelta
 from typing import Any, Callable, Iterator
 from zoneinfo import ZoneInfo
 
-from . import credit, telegram
+from . import credit, health, telegram, weekly
 from .config import Settings, secret
 from .db import Database
 from .prefilter import prefilter
+from .salary import salary_cfg, usd_month
 from .scorer import CreditExhaustedError, Scorer, ScorerFatalError
 from .sources import DESCRIPTION_FETCHERS, FetchResult, enabled_sources, fetch_source
 from .util import http_client, short_error, utcnow
@@ -68,6 +70,7 @@ class RunReport:
     score_failures: int = 0
     notified: int = 0
     llm_cost_usd: float = 0.0
+    disabled: list[str] = field(default_factory=list)
     credit_exhausted: bool = False
     busy: bool = False
     notes: list[str] = field(default_factory=list)
@@ -95,11 +98,15 @@ def _run(
     window = settings.notify_window
     now_local = local_now((window or {}).get("timezone"))
     quiet = not dry_run and not in_notify_window(window, now_local)
+    health_cfg = health.health_cfg(settings)
     db = Database(settings.db_path)
     try:
         # 1. Fetch every source that is due. One failing source never breaks the run.
         for name in enabled_sources(settings.sources):
             cfg = settings.sources.get(name) or {}
+            if health.should_skip_disabled(db, name, now, health_cfg):
+                report.disabled.append(name)
+                continue
             last_ok = db.last_success(name)
             interval = timedelta(hours=float(cfg.get("min_interval_hours", 2)))
             if not force and last_ok and now - last_ok < interval - PACING_SLACK:
@@ -107,7 +114,8 @@ def _run(
                 continue
             result = fetch_source(name, cfg)
             report.fetched.append(result)
-            db.record_fetch(name, now, len(result.jobs), result.error)
+            streak = db.record_fetch(name, now, len(result.jobs), result.error)
+            health.after_fetch(db, name, now, streak, result.error, health_cfg)
             if result.error:
                 log.error("source %s FAILED in %.1fs: %s", name, result.seconds, result.error)
             else:
@@ -116,14 +124,20 @@ def _run(
                 log.warning("source %s: %s", name, warning)
         if report.skipped:
             log.info("not due yet (min_interval_hours): %s", ", ".join(report.skipped))
+        if report.disabled:
+            log.info("auto-disabled (waiting for retry): %s", ", ".join(report.disabled))
 
         # 2. Dedupe against the DB, then 3. prefilter every new job.
         new = db.insert_new_jobs((job for r in report.fetched for job in r.jobs), now)
         report.new_jobs = len(new)
         passed_jobs = []
+        min_salary, fx = salary_cfg(settings.raw)
         for job_id, job in new:
+            usd = usd_month(job.salary, fx)
+            if usd:
+                db.set_salary_usd(job_id, *usd)
             passed, reason = prefilter(
-                job, settings.prefilter, settings.exclude_companies, settings.max_job_age_days, now
+                job, settings.prefilter, settings.exclude_companies, settings.max_job_age_days, now, min_salary, fx
             )
             db.set_prefilter(job_id, passed, reason)
             report.prefilter_passed += passed
@@ -159,8 +173,20 @@ def _run(
         # Claude credit: an alert when the API says it ran out, and one short estimate per day.
         if not quiet:
             _credit_messages(db, settings, report, now_local, dry_run, out)
+            health.flush_alerts(db, dry_run, out)  # alerts held during quiet hours (sources disabled/re-enabled)
+            if not dry_run and weekly.is_due(now_local, weekly.weekly_cfg(settings), db.get_meta("weekly_sent_week")):
+                if health.deliver(weekly.build(db, settings, now_local)):
+                    db.set_meta("weekly_sent_week", weekly.week_key(now_local))
         if not dry_run:
             db.set_meta("last_run_at", utcnow().isoformat())
+            healthy = not (report.fetched and all(not r.ok for r in report.fetched))
+            if healthy:
+                db.set_meta("last_healthy_run_at", utcnow().isoformat())
+                health.ping(health_cfg)
+            try:
+                health.maybe_backup(db, settings.db_path, now, settings.raw.get("backup") or {})
+            except (OSError, sqlite3.Error) as exc:
+                log.error("backup failed: %s", exc)
     finally:
         db.close()
     log.info(
@@ -199,28 +225,56 @@ def _fetch_missing_descriptions(db: Database, settings: Settings, jobs: list) ->
 def _score_pending(db: Database, settings: Settings, report: RunReport) -> None:
     llm = settings.llm
     max_attempts = int(llm.get("max_attempts", 3))
+    use_batch = bool(llm.get("batch"))
     rows = db.jobs_to_score(max_attempts, int(llm.get("max_jobs_per_run", 40)))
-    if not rows:
+    if not rows and not (use_batch and db.pending_batch_ids()):
         return
     if not secret("ANTHROPIC_API_KEY"):
         log.error("ANTHROPIC_API_KEY is not set in .env; %d jobs left unscored", len(rows))
         report.notes.append("missing ANTHROPIC_API_KEY")
         return
-    scorer = Scorer(llm_cfg=llm, profile=settings.profile_text, location=settings.location)
+    feedback = ""
+    if llm.get("use_feedback", True):
+        from .scorer import format_feedback
+
+        feedback = format_feedback(db.feedback_examples(int(llm.get("feedback_examples", 8))))
+    scorer = Scorer(llm_cfg=llm, profile=settings.profile_text, location=settings.location, feedback=feedback)
+    try:
+        if use_batch:
+            from .batch_scoring import score_in_batch
+
+            usage = score_in_batch(db, scorer, rows, report, float(llm.get("batch_wait_minutes", 10)))
+        else:
+            usage = scorer.usage
+            try:
+                _score_one_by_one(db, scorer, rows, report)
+            finally:  # record what was spent even if an error stopped the loop halfway
+                report.llm_cost_usd = usage.cost_usd(scorer.model)
+                if usage.calls:
+                    db.record_llm_spend(utcnow(), scorer.model, usage, report.llm_cost_usd)
+    except CreditExhaustedError as exc:
+        log.error("scoring stopped for this run: %s", exc)
+        report.credit_exhausted = True
+        return
+    except ScorerFatalError as exc:
+        log.error("scoring stopped for this run: %s", exc)
+        report.notes.append(str(exc))
+        return
+    remaining = db.count_pending_scores(max_attempts)
+    log.info(
+        "LLM usage: %d calls, in=%d out=%d cache_read=%d cache_write=%d tokens, ≈$%.4f (%s%s); %d jobs still pending",
+        usage.calls, usage.input_tokens, usage.output_tokens, usage.cache_read_tokens, usage.cache_write_tokens,
+        report.llm_cost_usd, scorer.model, ", batch -50%" if use_batch else "", remaining,
+    )
+
+
+def _score_one_by_one(db: Database, scorer: Scorer, rows: list, report: RunReport) -> None:
     for row in rows:
         job = dict(row)
-        try:
-            outcome = scorer.score(job)
-        except CreditExhaustedError as exc:
-            log.error("scoring stopped for this run: %s", exc)
-            report.credit_exhausted = True
-            break
-        except ScorerFatalError as exc:
-            log.error("scoring stopped for this run: %s", exc)
-            report.notes.append(str(exc))
-            break
+        outcome = scorer.score(job)  # CreditExhaustedError / ScorerFatalError stop the loop (handled by the caller)
         if outcome.result:
             db.save_score(job["id"], outcome.result, scorer.model, utcnow())
+            db.fill_salary_from_llm(job["id"], outcome.result.get("salary_usd_month"))
             report.scored += 1
             log.info("scored %3d %s | %s @ %s", outcome.result["score"],
                      "✓" if outcome.result["fits_location"] else "✗", job["title"], job["company"])
@@ -228,23 +282,17 @@ def _score_pending(db: Database, settings: Settings, report: RunReport) -> None:
             db.record_score_failure(job["id"], outcome.error or "unknown error")
             report.score_failures += 1
             log.warning("could not score job %d (%s @ %s): %s", job["id"], job["title"], job["company"], outcome.error)
-    report.llm_cost_usd = scorer.usage.cost_usd(scorer.model)
-    if scorer.usage.calls:
-        db.record_llm_spend(utcnow(), scorer.model, scorer.usage, report.llm_cost_usd)
-    remaining = db.count_pending_scores(max_attempts)
-    log.info(
-        "LLM usage: %d calls, in=%d out=%d cache_read=%d cache_write=%d tokens, ≈$%.4f (%s); %d jobs still pending",
-        scorer.usage.calls, scorer.usage.input_tokens, scorer.usage.output_tokens, scorer.usage.cache_read_tokens,
-        scorer.usage.cache_write_tokens, report.llm_cost_usd, scorer.model, remaining,
-    )
 
 
 def _notify(db: Database, settings: Settings, report: RunReport, dry_run: bool, out: Callable[[str], None]) -> None:
-    rows = [dict(r) for r in db.jobs_to_notify(settings.min_score, settings.require_location_fit)]
+    min_salary, _ = salary_cfg(settings.raw)
+    rows = [dict(r) for r in db.jobs_to_notify(settings.min_score, settings.require_location_fit, min_salary)]
+    rows = _drop_closed(db, settings, rows)
     if not rows:
         log.info("nothing new to notify (min_score=%d)", settings.min_score)
         return
-    messages = telegram.build_digest(rows)
+    messages = telegram.build_digest(rows, numbered=True)
+    number_of = {row["id"]: n for n, row in enumerate(rows, 1)}
     if dry_run:
         out(f"--- DRY RUN: would send {len(rows)} jobs in {len(messages)} Telegram message(s) ---")
         for text, _ in messages:
@@ -256,7 +304,8 @@ def _notify(db: Database, settings: Settings, report: RunReport, dry_run: bool, 
         return
     for text, ids in messages:
         try:
-            telegram.send_message(token, chat_id, text)
+            keyboard = telegram.feedback_keyboard([(number_of[i], i, None, None) for i in ids])
+            telegram.send_message(token, chat_id, text, reply_markup=keyboard)
         except telegram.TelegramError as exc:
             log.error("Telegram send failed, will retry next run: %s", exc)
             return
@@ -284,18 +333,29 @@ def _credit_messages(
         db.set_meta("credit_report_date", today)
 
 
+def _drop_closed(db: Database, settings: Settings, rows: list[dict]) -> list[dict]:
+    """Check each job about to be sent is still open; closed ones are marked and never sent."""
+    cfg = settings.raw.get("closed_check") or {}
+    if not rows or not cfg.get("enabled", True):
+        return rows
+    from .closed import is_closed
+
+    still_open = []
+    with http_client(timeout=15) as client:
+        for i, row in enumerate(rows):
+            if i:
+                time_module.sleep(float(cfg.get("delay_seconds", 1)))
+            if is_closed(row["url"], client):
+                db.mark_closed(row["id"], utcnow())
+                log.info("closed posting, not sent: %s @ %s", row["title"], row["company"])
+            else:
+                still_open.append(row)
+    return still_open
+
+
 def _send_or_print(settings: Settings, text: str, dry_run: bool, out: Callable[[str], None]) -> bool:
     """Send a Telegram message (print it on dry-run). Returns True if it was sent."""
-    token, chat_id = secret("TELEGRAM_BOT_TOKEN"), secret("TELEGRAM_CHAT_ID")
-    if dry_run or not token or not chat_id:
-        out(text)
-        return False
-    try:
-        telegram.send_message(token, chat_id, text)
-    except telegram.TelegramError as exc:
-        log.error("could not send message to Telegram: %s", exc)
-        return False
-    return True
+    return health.deliver(text, dry_run, out)
 
 
 def _print_unscored(db: Database, settings: Settings, out: Callable[[str], None]) -> None:
@@ -314,7 +374,8 @@ def check_sources(settings: Settings, names: list[str] | None = None, out: Calla
         result = fetch_source(name, cfg)
         passed = [
             job for job in result.jobs
-            if prefilter(job, settings.prefilter, settings.exclude_companies, settings.max_job_age_days, now)[0]
+            if prefilter(job, settings.prefilter, settings.exclude_companies, settings.max_job_age_days, now,
+                         *salary_cfg(settings.raw))[0]
         ]
         status = "OK  " if result.ok else "FAIL"
         all_ok &= result.ok

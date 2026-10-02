@@ -5,7 +5,8 @@ import YAML from "yaml";
 import type { JobDetail, JobStatus, JobsPage, JobSummary, Overview, SourceStatus } from "../shared/types";
 
 const SUMMARY_COLUMNS = `id, source, title, company, location, url, posted_at, first_seen_at, prefilter_passed,
-  prefilter_reason, score, fits_location, seniority, reason, salary, scored_at, notified_at, last_score_error`;
+  prefilter_reason, score, fits_location, seniority, reason, salary, scored_at, notified_at, last_score_error,
+  feedback, status, status_at, notes, salary_usd_low, salary_usd_month, closed_at`;
 
 export interface JobsQuery {
   q?: string;
@@ -55,6 +56,15 @@ export class JobsDb {
     if (!fs.existsSync(this.file)) return null;
     this.db = new DatabaseSync(this.file);
     this.db.exec("PRAGMA busy_timeout = 5000");
+    // Same columns job_radar/db.py adds, in case the portal opens a database before a search migrated it.
+    const columns = new Set((this.db.prepare("PRAGMA table_info(jobs)").all() as { name: string }[]).map((c) => c.name));
+    if (columns.size) {
+      const added: [string, string][] = [["feedback", "TEXT"], ["feedback_at", "TEXT"], ["status", "TEXT"],
+        ["status_at", "TEXT"], ["notes", "TEXT"], ["salary_usd_low", "REAL"], ["salary_usd_month", "REAL"], ["closed_at", "TEXT"]];
+      for (const [name, type] of added) {
+        if (!columns.has(name)) this.db.exec(`ALTER TABLE jobs ADD COLUMN ${name} ${type}`);
+      }
+    }
     return this.db;
   }
 
@@ -80,6 +90,7 @@ export class JobsDb {
       case "scored": where.push("score IS NOT NULL"); break;
       case "unscored": where.push("prefilter_passed = 1 AND score IS NULL"); break;
       case "rejected": where.push("prefilter_passed = 0"); break;
+      case "tracking": where.push("(status IS NOT NULL OR feedback = 'like')"); break;
     }
     if (query.q?.trim()) {
       where.push("(title LIKE :q OR company LIKE :q OR location LIKE :q)");
@@ -117,6 +128,31 @@ export class JobsDb {
   getMeta(key: string): string | null {
     const row = this.conn()?.prepare("SELECT value FROM meta WHERE key = ?").get(key) as { value: string } | undefined;
     return row?.value ?? null;
+  }
+
+  /** Your feedback and application status: the only writes the portal makes to the jobs database. */
+  updateTracking(id: number, change: { feedback?: string | null; status?: string | null; notes?: string | null }): boolean {
+    const db = this.conn();
+    if (!db) return false;
+    const now = new Date().toISOString();
+    const sets: string[] = [];
+    const params: Record<string, string | number | null> = { id };
+    if ("feedback" in change) {
+      sets.push("feedback = :feedback", "feedback_at = :feedbackAt");
+      params.feedback = change.feedback ?? null;
+      params.feedbackAt = change.feedback ? now : null;
+    }
+    if ("status" in change) {
+      sets.push("status = :status", "status_at = :statusAt");
+      params.status = change.status ?? null;
+      params.statusAt = change.status ? now : null;
+    }
+    if ("notes" in change) {
+      sets.push("notes = :notes");
+      params.notes = change.notes ?? null;
+    }
+    if (!sets.length) return false;
+    return Number(db.prepare(`UPDATE jobs SET ${sets.join(", ")} WHERE id = :id`).run(params).changes) > 0;
   }
 
   getJob(id: number): JobDetail | null {

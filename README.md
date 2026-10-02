@@ -20,8 +20,8 @@ nunca publica nada.
 fuentes ─► normaliza ─► quita duplicados (SQLite) ─► filtro de palabras ─► Claude califica (solo nuevas) ─► Telegram
 ```
 
-- **13 fuentes:** Indeed, LinkedIn (búsqueda pública), APIs de Greenhouse/Lever/Ashby para las empresas que tú
-  elijas, Remotive, Remote OK, Get on Board, Himalayas, Jobicy y (opcional) Computrabajo.
+- **14 fuentes:** Indeed, LinkedIn (búsqueda pública), APIs de Greenhouse/Lever/Ashby para las empresas que tú
+  elijas, Remotive, Remote OK, Get on Board, Himalayas, Jobicy, Working Nomads y (opcional) Computrabajo.
 - **Calificación con Claude:** puntaje 0–100, si la ubicación o la modalidad te sirve, seniority, una línea de por
   qué y alertas (ej. "requiere autorización de trabajo en EE.UU."). Cada oferta se califica **una sola vez**.
 - **Resumen por Telegram** con las ofertas de 70+ puntos, solo en tu horario (7:00–22:00 por defecto). Lo que se
@@ -30,7 +30,8 @@ fuentes ─► normaliza ─► quita duplicados (SQLite) ─► filtro de palab
 - **Reporte de skills:** qué tecnologías piden más las ofertas cercanas a tu perfil y cuáles te abrirían más
   ofertas (ej. "full stack, ¿especializado en qué backend?").
 - **Portal web local** (opcional): ver y filtrar todas las ofertas, el estado, ejecutar comandos y editar la
-  configuración. Se puede usar desde el celular (acceso remoto de solo lectura con login de Google) e instalar
+  configuración. Se puede usar desde el celular (acceso remoto con login de Google: ver ofertas,
+  correr comandos y marcar postulaciones, pero no editar la configuración) e instalar
   como app en el iPhone.
 - **Control de costo:** estima tu saldo de Claude y te avisa cuando se está acabando.
 
@@ -197,7 +198,7 @@ cp .env.example .env
 
 **Acceso remoto (opcional):** llena `NGROK_AUTHTOKEN`, `NGROK_DOMAIN` y `NGROK_ALLOWED_EMAILS` en `.env` (ver
 [portal/README.md](portal/README.md)) y arranca con `docker compose --profile remote up -d --build`. El túnel no
-arranca si no hay correos autorizados, y el acceso remoto es de solo lectura.
+arranca si no hay correos autorizados, y por el túnel no se pueden editar `.env`, la configuración ni el perfil.
 
 Notas:
 
@@ -222,9 +223,22 @@ Escríbele a tu bot (toca **/** para ver el menú; la barra es opcional). Solo r
 | `/hoy` | Resumen de hoy: vistas, filtradas, calificadas, enviadas, gasto de Claude |
 | `/estado` | Estado de cada fuente, próxima búsqueda, ofertas esperando el horario |
 | `/credito` | Crédito de Claude estimado |
+| `/postulaciones` | Ofertas a las que aplicaste, con botones para marcar 🗣 entrevista, 🎉 oferta o ✖ rechazo |
+| `/semana` | Resumen de los últimos 7 días (también llega solo los lunes a las 7:00) |
+| `/filtro [días]` | Títulos que el filtro de palabras quizá está descartando por error |
+| `/reactivar <fuente>` | Reactiva una fuente que se desactivó por fallar muchas veces |
 | `/skills [días]` | Reporte de skills con recomendación de Claude (~US$0.015) |
 | `/buscar` | Buscar ahora (las fuentes consultadas hace poco se saltan) |
 | `/ayuda` | La lista de comandos |
+
+### Tu opinión y tus postulaciones
+
+Cada oferta del resumen trae botones: **👍** te interesa, **👎** no, **📨** ya aplicaste. Luego, en `/postulaciones`,
+marcas cómo va cada una (🗣 entrevista, 🎉 oferta, ✖ rechazo). En el portal puedes hacer lo mismo y agregar notas
+(contacto, fechas, salario ofrecido), y la vista **🗂️ Postulaciones** junta todo.
+
+Tus 👍, 👎 y postulaciones también **mejoran la calificación**: las más recientes se le pasan a Claude como ejemplos
+de lo que te gusta y lo que no (`llm.use_feedback`, activado por defecto).
 
 ### Línea de comandos
 
@@ -241,6 +255,9 @@ Desde la carpeta del repo: `.venv/bin/python -m job_radar <comando>`
 | `top --days 7` | Las mejores ofertas de la base de datos |
 | `skills [--days N] [--send] [--no-llm]` | Reporte de skills; `--send` lo manda a Telegram |
 | `credit [--send]` | Gasto de Claude y saldo estimado; `--send` lo manda a Telegram |
+| `weekly [--send]` | Resumen de los últimos 7 días; `--send` lo manda a Telegram |
+| `filter-report [--days N] [--send]` | Títulos que el filtro de palabras quizá descarta por error, y exclusiones que chocan con tus palabras |
+| `source-enable <fuente>` | Reactiva una fuente desactivada automáticamente |
 | `telegram-setup` | Muestra tu chat_id después de escribirle al bot |
 | `test-telegram` | Envía un mensaje de prueba |
 | `bot` | Corre el bot de Telegram en primer plano (normalmente lo hace el servicio) |
@@ -260,8 +277,21 @@ Para el bot, reinícialo después de cambiar `.env`.
 - **`sources.<fuente>.min_interval_hours`**: cada cuánto se consulta cada fuente (respeta los límites de cada
   sitio). `enabled: false` la apaga.
 - **`skills_report.not_really_have`**: skills de tu perfil que no quieres que cuenten como "ya lo tienes".
+- **`health`**: si una fuente falla 6 veces seguidas se desactiva y te avisa; se reintenta cada 24 h y vuelve sola.
+  El bot también te avisa si no ha terminado una búsqueda correcta en 6 horas. Con `ping_url` (ej. un check gratis
+  de [healthchecks.io](https://healthchecks.io)) te llega un correo aunque la computadora esté apagada.
+- **`salary`**: salario mínimo en USD al mes (`min_usd_month`). Los salarios se normalizan a USD/mes (con
+  `fx_per_usd` para MXN y otras monedas) y se muestran en Telegram y el portal. Solo se descartan las ofertas que
+  **claramente** pagan menos (el máximo del rango); las que no dicen salario, o lo dicen de forma ambigua, pasan. Si
+  el salario solo viene en la descripción, Claude lo extrae.
+- **`closed_check`**: antes de enviarte una oferta se revisa que siga abierta (404, "No longer accepting
+  applications", etc.). Si el sitio no responde claro, se envía igual.
+- **`backup`**: copia semanal de la base de datos en `data/backups/` (guarda las últimas 4).
+- **`weekly_summary`**: resumen semanal por Telegram (lunes 7:00 por defecto).
 
-Revisa el efecto con `check-sources` (muestra cuántas ofertas pasan el filtro por fuente).
+Revisa el efecto con `check-sources` (muestra cuántas ofertas pasan el filtro por fuente), y usa `/filtro` o
+`filter-report` para ver qué títulos de desarrollo está descartando y si alguna exclusión choca con tus palabras
+(por ejemplo, `.net` descartando "Full Stack (.NET / Angular)").
 
 ### Adaptarlo a otro país o perfil
 
@@ -305,6 +335,10 @@ perfil en caché, y ~130 de salida):
 | `claude-opus-5` | ~US$0.0085 | ~US$8–15 | El más cuidadoso |
 | `claude-haiku-4-5` | ~US$0.0025 | ~US$2–3 | Sobrecalificó roles full-stack con mucho backend |
 
+**Batch API (50% más barato):** con `llm.batch: true` las ofertas se califican en lote a mitad de precio. La
+calificación deja de ser instantánea: cada corrida espera el lote hasta `batch_wait_minutes` (10) y, si tarda más,
+esas ofertas llegan en la siguiente corrida.
+
 \* Suponiendo que 20–40 ofertas al día pasan el filtro. La primera corrida califica un rezago (30–40 ofertas,
 ~US$0.15). Cada corrida registra su costo real en el log. El tope es `max_jobs_per_run` × 12 corridas al día.
 
@@ -334,6 +368,7 @@ se califica al recargar). Actualiza ambos valores cada vez que recargues.
 | Get on Board | API pública | ✅ | LatAm |
 | Himalayas | API pública | ✅ | Cada 24 h; filtra por país |
 | Jobicy | API pública | ✅ | Máx. 1 consulta por hora; filtra por región |
+| Working Nomads | API pública | ✅ | Las ~60 más nuevas; solo la categoría Development |
 | Indeed, LinkedIn | Páginas públicas vía [JobSpy](https://github.com/speedyapply/JobSpy), sin login | ✅ | ⚠️ Sus términos no permiten acceso automatizado |
 | Google Jobs | JobSpy | ❌ | No devolvía resultados al probarlo |
 | Computrabajo | Páginas públicas con encabezados de navegador | ❌ | ⚠️ Su aviso legal lo prohíbe y bloquea bots |
@@ -395,7 +430,15 @@ cd portal && npm test                  # tests del API del portal
 ```
 
 Los tests de las fuentes usan respuestas reales grabadas en `tests/fixtures/` y los del calificador simulan la API
-de Claude.
+de Claude; ninguno usa la red. GitHub Actions los corre en cada push (`.github/workflows/tests.yml`).
+
+**Dependencias:** `requirements.txt` dice qué se necesita y `requirements.lock` fija las versiones exactas probadas
+(es lo que instala `install_mac.sh`). Para actualizarlas:
+
+```bash
+uv pip compile requirements.txt --universal --python-version 3.10 -o requirements.lock
+.venv/bin/python -m pytest -q
+```
 
 ## Licencia
 

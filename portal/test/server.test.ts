@@ -152,8 +152,7 @@ describe("remote access (tunnel)", () => {
       ["PATCH", "/api/settings", { changes: { min_score: 1 } }],
       ["PUT", "/api/config/raw", { text: "sources: {}" }],
       ["PUT", "/api/profile", { text: "x" }],
-      ["POST", "/api/commands/run/run", {}],
-      ["POST", "/api/agents/search/kickstart", {}],
+      ["POST", "/api/agents/unknown/kickstart", {}],  // only search/bot may be started remotely
     ] as const) {
       const res = await request(method, url, { body, headers: origin });
       assert.equal(res.status, 403, `${method} ${url}`);
@@ -161,7 +160,7 @@ describe("remote access (tunnel)", () => {
     }
     assert.match(fs.readFileSync(path.join(repo, ".env"), "utf8"), /sk-ant-secret-value-1234/);
   });
-  test("remote may run only the commands that don't write to the DB", async () => {
+  test("remote may run every listed command, but nothing unlisted", async () => {
     const origin = { ...remote, origin: `https://${REMOTE}` };
     const allowed = await request("POST", "/api/commands/credit/run", { body: {}, headers: origin });
     assert.equal(allowed.status, 200);
@@ -170,13 +169,17 @@ describe("remote access (tunnel)", () => {
       if (run.status !== "running") break;
       await new Promise((r) => setTimeout(r, 50));
     }
-    for (const id of ["run", "run-dry", "credit-send", "skills-send"]) {
-      const res = await request("POST", `/api/commands/${id}/run`, { body: {}, headers: origin });
-      assert.equal(res.status, 403, id);
+    for (let i = 0; i < 50; i++) {
+      const runs = (await request("GET", "/api/commands", { headers: remote })).json.runs;
+      if (!runs.some((r: any) => r.status === "running")) break;
+      await new Promise((r) => setTimeout(r, 50));
     }
+    const run = await request("POST", "/api/commands/run/run", { body: {}, headers: origin });
+    assert.equal(run.status, 200);  // writes to the DB, allowed remotely now
+    assert.equal((await request("POST", `/api/commands/${encodeURIComponent("rm -rf")}/run`, { body: {}, headers: origin })).status, 403);
     const listed = (await request("GET", "/api/commands", { headers: remote })).json.cli;
     const readOnlyIds = listed.filter((c: any) => !c.writesDb).map((c: any) => c.id).sort();
-    assert.deepEqual(readOnlyIds, ["check-sources", "credit", "skills", "test-telegram", "top"]);
+    assert.deepEqual(readOnlyIds, ["check-sources", "credit", "filter-report", "skills", "test-telegram", "top", "weekly"]);
   });
   test("a tunneled request can't pose as local by sending a local Host header", async () => {
     const res = await request("PUT", "/api/env", {
@@ -274,6 +277,33 @@ describe("jobs", () => {
     assert.equal(o.credit.remaining, 3.54);
     assert.equal(o.sources[0].source, "linkedin");
     assert.equal(o.agents.length, 2);
+  });
+});
+
+describe("application tracking", () => {
+  test("feedback, status and notes are saved locally", async () => {
+    let res = await request("PATCH", "/api/jobs/2/tracking", { body: { feedback: "like", status: "applied", notes: "Ana (recruiter)" } });
+    assert.equal(res.status, 200);
+    assert.equal(res.json.feedback, "like");
+    assert.equal(res.json.status, "applied");
+    assert.equal(res.json.notes, "Ana (recruiter)");
+    assert.ok(res.json.status_at);
+    res = await request("PATCH", "/api/jobs/2/tracking", { body: { status: "interview" } });
+    assert.equal(res.json.status, "interview");
+    assert.equal(res.json.notes, "Ana (recruiter)");  // untouched fields stay
+    const tracking = (await request("GET", "/api/jobs?status=tracking")).json.jobs.map((j: any) => j.id);
+    assert.deepEqual(tracking, [2]);
+  });
+  test("validation, and remote tracking allowed", async () => {
+    assert.equal((await request("PATCH", "/api/jobs/2/tracking", { body: { status: "hired" } })).status, 400);
+    assert.equal((await request("PATCH", "/api/jobs/2/tracking", { body: { feedback: "love" } })).status, 400);
+    assert.equal((await request("PATCH", "/api/jobs/999/tracking", { body: { feedback: "like" } })).status, 404);
+    const remote = { host: REMOTE, "x-forwarded-for": "203.0.113.7", origin: `https://${REMOTE}` };
+    const res = await request("PATCH", "/api/jobs/2/tracking", { body: { feedback: "dislike" }, headers: remote });
+    assert.equal(res.status, 200);  // tracking is allowed remotely
+    assert.equal(res.json.feedback, "dislike");
+    const edit = await request("PATCH", "/api/settings", { body: { changes: { min_score: 1 } }, headers: remote });
+    assert.equal(edit.status, 403);  // config stays Mac-only
   });
 });
 

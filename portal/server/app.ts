@@ -23,7 +23,9 @@ export interface AppOptions {
 
 class BadRequest extends Error {}
 
-const STATUSES: JobStatus[] = ["all", "relevant", "matches", "sent", "waiting", "scored", "unscored", "rejected"];
+const STATUSES: JobStatus[] = ["all", "relevant", "matches", "sent", "waiting", "scored", "unscored", "rejected", "tracking"];
+const FEEDBACK = [null, "like", "dislike"];
+const APPLICATION = [null, "applied", "interview", "offer", "rejected"];
 
 export function createApp({ paths, port, remoteHosts = [], runtime = detectRuntime(), staticDir, runner }: AppOptions) {
   const app = express();
@@ -50,9 +52,14 @@ export function createApp({ paths, port, remoteHosts = [], runtime = detectRunti
   const body = (req: Request) => (req.body ?? {}) as Record<string, unknown>;
 
   app.disable("x-powered-by");
+  // Remote access is read-only for .env, config and profile, but may run commands, start a search, restart the bot
+  // and track jobs (👍/👎, application status, notes).
   const remoteMayWrite = (req: Request) => {
-    const match = /^\/api\/commands\/([^/]+)\/run$/.exec(req.path);
-    return req.method === "POST" && match !== null && runnableRemotely(decodeURIComponent(match[1]));
+    if (req.method === "PATCH") return /^\/api\/jobs\/\d+\/tracking$/.test(req.path);  // 👍/👎, status, notes
+    if (req.method !== "POST") return false;
+    const command = /^\/api\/commands\/([^/]+)\/run$/.exec(req.path);
+    if (command) return runnableRemotely(decodeURIComponent(command[1]));
+    return /^\/api\/agents\/(search|bot)\/kickstart$/.test(req.path);
   };
   app.use(localOnly({ port, remoteHosts, remoteMayWrite }));
   app.use(express.json({ limit: "256kb" }));
@@ -78,6 +85,30 @@ export function createApp({ paths, port, remoteHosts = [], runtime = detectRunti
     const job = db().db.getJob(Number(req.params.id));
     if (!job) res.status(404).json({ error: "Oferta no encontrada" });
     return job ?? undefined;
+  }));
+
+  app.patch("/api/jobs/:id/tracking", route((req, res) => {
+    const change: { feedback?: string | null; status?: string | null; notes?: string | null } = {};
+    const b = body(req);
+    if ("feedback" in b) {
+      if (!FEEDBACK.includes(b.feedback as string | null)) throw new BadRequest("feedback inválido");
+      change.feedback = b.feedback as string | null;
+    }
+    if ("status" in b) {
+      if (!APPLICATION.includes(b.status as string | null)) throw new BadRequest("estado inválido");
+      change.status = b.status as string | null;
+    }
+    if ("notes" in b) {
+      const notes = b.notes === null ? null : String(b.notes);
+      if (notes && notes.length > 5000) throw new BadRequest("Las notas son demasiado largas (máx. 5,000).");
+      change.notes = notes || null;
+    }
+    const { db: jobs } = db();
+    if (!jobs.updateTracking(Number(req.params.id), change)) {
+      res.status(404).json({ error: "Oferta no encontrada" });
+      return undefined;
+    }
+    return jobs.getJob(Number(req.params.id));
   }));
 
   // --- status -----------------------------------------------------------------------------------

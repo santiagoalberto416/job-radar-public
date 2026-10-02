@@ -9,7 +9,9 @@ from typing import Any
 from ..models import Job
 from ..util import http_client, short_error
 from .ats import fetch_ats
-from .boards import fetch_getonboard, fetch_himalayas, fetch_jobicy, fetch_remoteok, fetch_remotive
+from .boards import (
+    fetch_getonboard, fetch_himalayas, fetch_jobicy, fetch_remoteok, fetch_remotive, fetch_workingnomads,
+)
 from .computrabajo import fetch_computrabajo, fetch_description as computrabajo_description
 from .jobspy_source import SITE_FOR_SOURCE, fetch_jobspy
 
@@ -22,6 +24,7 @@ HTTP_SOURCES = {
     "getonboard": fetch_getonboard,
     "himalayas": fetch_himalayas,
     "jobicy": fetch_jobicy,
+    "workingnomads": fetch_workingnomads,
     "computrabajo": fetch_computrabajo,
 }
 # Sources whose listings have no description: fetch it per job, only for new jobs that passed the prefilter.

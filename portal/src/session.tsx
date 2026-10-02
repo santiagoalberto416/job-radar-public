@@ -24,8 +24,8 @@ export function ReadOnlyNotice() {
   if (!readOnly) return null;
   return (
     <div className="notice">
-      🔒 Acceso remoto en <strong>modo solo lectura</strong>: puedes ver todo, pero los cambios y comandos solo se
-      pueden hacer desde la Mac (http://127.0.0.1:4747).
+      🔒 Acceso remoto: puedes ver todo, ejecutar comandos y marcar tus postulaciones, pero <code>.env</code>, la
+      configuración y el perfil solo se editan desde la Mac (http://127.0.0.1:4747).
     </div>
   );
 }

@@ -60,6 +60,8 @@ def prefilter(
     excluded_companies: Iterable[str] = (),
     max_age_days: int | None = None,
     now: datetime | None = None,
+    min_salary_usd_month: float | None = None,
+    fx: dict[str, float] | None = None,
 ) -> tuple[bool, str]:
     """Return (passed, reason). The reason explains a rejection (or what matched)."""
     if is_excluded_company(job, excluded_companies):
@@ -88,5 +90,12 @@ def prefilter(
                 return False, f"older than {max_age_days} days"
         except (ValueError, TypeError):
             pass
+
+    if min_salary_usd_month and job.salary:
+        from .salary import DEFAULT_FX, format_usd_month, usd_month
+
+        usd = usd_month(job.salary, fx or DEFAULT_FX)
+        if usd and usd[1] < min_salary_usd_month:
+            return False, f"salary below minimum ({format_usd_month(*usd)})"
 
     return True, f"matched '{include_hit}'"

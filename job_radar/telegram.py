@@ -22,19 +22,24 @@ def escape(value: Any) -> str:
     return html.escape(str(value or ""), quote=False)
 
 
-def format_job(job: Mapping[str, Any]) -> str:
+def format_job(job: Mapping[str, Any], number: int | None = None) -> str:
     url = html.escape(job["url"], quote=True)
+    prefix = f"{number}. " if number is not None else ""
     lines = [
-        f"<b>{job['score']}</b> · <a href=\"{url}\">{escape(job['title'])}</a>",
+        f"{prefix}<b>{job['score']}</b> · <a href=\"{url}\">{escape(job['title'])}</a>",
         f"🏢 {escape(job['company'])}  📍 {escape(job.get('location') or 'n/d')}  🔎 {escape(job['source'])}",
     ]
+    if job.get("salary_usd_month"):
+        from .salary import format_usd_month
+
+        lines.append(f"💰 {format_usd_month(job.get('salary_usd_low'), job['salary_usd_month'])}")
     if job.get("reason"):
         lines.append(f"💬 {escape(job['reason'])}")
     return "\n".join(lines)
 
 
 def build_digest(
-    jobs: Sequence[Mapping[str, Any]], limit: int = SAFE_LEN, header: str | None = None
+    jobs: Sequence[Mapping[str, Any]], limit: int = SAFE_LEN, header: str | None = None, numbered: bool = False
 ) -> list[tuple[str, list[int]]]:
     """Split the digest into messages under `limit` chars. Returns (html_text, job_ids) per message."""
     if not jobs:
@@ -43,8 +48,8 @@ def build_digest(
         header = f"🛰️ <b>job-radar</b>: {len(jobs)} {'oferta nueva' if len(jobs) == 1 else 'ofertas nuevas'}"
     messages: list[tuple[str, list[int]]] = []
     current, ids = header, []
-    for job in jobs:
-        block = format_job(job)
+    for number, job in enumerate(jobs, 1):
+        block = format_job(job, number if numbered else None)
         if len(block) + 2 > limit - len(header):  # a single huge entry: drop the reason line
             block = block.split("\n💬", 1)[0][: limit - len(header) - 2]
         if len(current) + 2 + len(block) > limit:
@@ -56,9 +61,60 @@ def build_digest(
     return messages
 
 
-def send_message(token: str, chat_id: str, text: str, client: httpx.Client | None = None) -> None:
-    payload = {"chat_id": chat_id, "text": text, "parse_mode": "HTML", "disable_web_page_preview": True}
+def send_message(
+    token: str, chat_id: str, text: str, client: httpx.Client | None = None, reply_markup: dict | None = None
+) -> None:
+    payload: dict[str, Any] = {"chat_id": chat_id, "text": text, "parse_mode": "HTML", "disable_web_page_preview": True}
+    if reply_markup:
+        payload["reply_markup"] = reply_markup
     _call(token, "sendMessage", payload, client)
+
+
+def answer_callback(token: str, callback_id: str, text: str, client: httpx.Client | None = None) -> None:
+    _call(token, "answerCallbackQuery", {"callback_query_id": callback_id, "text": text}, client)
+
+
+def edit_markup(token: str, chat_id: str, message_id: int, markup: dict, client: httpx.Client | None = None) -> None:
+    _call(token, "editMessageReplyMarkup", {"chat_id": chat_id, "message_id": message_id, "reply_markup": markup}, client)
+
+
+# --- feedback buttons ---------------------------------------------------------------------------------------
+# callback_data: "fb:<job_id>:like|dislike|applied" on digests, "st:<job_id>:interview|offer|rejected" on /postulaciones.
+FEEDBACK_BUTTONS = [("like", "👍"), ("dislike", "👎"), ("applied", "📨")]
+STATUS_BUTTONS = [("interview", "🗣"), ("offer", "🎉"), ("rejected", "✖")]
+
+
+def feedback_keyboard(items: Sequence[tuple[int, int, str | None, str | None]]) -> dict:
+    """items: (number, job_id, feedback, status). One row per job: [1 👍] [1 👎] [1 📨]; ✅ marks what's set."""
+    rows = []
+    for number, job_id, feedback, status in items:
+        row = []
+        for action, emoji in FEEDBACK_BUTTONS:
+            active = feedback == action or (action == "applied" and status is not None)
+            row.append({"text": f"{'✅' if active else ''}{number} {emoji}", "callback_data": f"fb:{job_id}:{action}"})
+        rows.append(row)
+    return {"inline_keyboard": rows}
+
+
+def status_keyboard(items: Sequence[tuple[int, int, str | None]]) -> dict:
+    """items: (number, job_id, status). One row per application: [1 🗣] [1 🎉] [1 ✖]."""
+    rows = []
+    for number, job_id, status in items:
+        rows.append([{"text": f"{'✅' if status == action else ''}{number} {emoji}", "callback_data": f"st:{job_id}:{action}"}
+                     for action, emoji in STATUS_BUTTONS])
+    return {"inline_keyboard": rows}
+
+
+def keyboard_items(markup: Mapping[str, Any] | None) -> list[tuple[str, int, int]]:
+    """(kind, number, job_id) for each row of a keyboard we sent, so it can be redrawn after a tap."""
+    items = []
+    for row in (markup or {}).get("inline_keyboard", []):
+        data = row[0].get("callback_data", "") if row else ""
+        parts = data.split(":")
+        if len(parts) == 3 and parts[1].isdigit():
+            number = "".join(ch for ch in row[0].get("text", "").lstrip("✅").split(" ")[0] if ch.isdigit())
+            items.append((parts[0], int(number or 0), int(parts[1])))
+    return items
 
 
 def get_me(token: str, client: httpx.Client | None = None) -> dict[str, Any]:
@@ -69,7 +125,7 @@ def get_updates(
     token: str, client: httpx.Client | None = None, offset: int | None = None, timeout: int = 0
 ) -> list[dict[str, Any]]:
     """Long-polls for up to `timeout` seconds. Pass a client whose timeout is longer than that."""
-    payload: dict[str, Any] = {"timeout": timeout, "allowed_updates": ["message"]}
+    payload: dict[str, Any] = {"timeout": timeout, "allowed_updates": ["message", "callback_query"]}
     if offset is not None:
         payload["offset"] = offset
     return _call(token, "getUpdates", payload, client)

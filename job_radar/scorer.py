@@ -21,8 +21,9 @@ SCORE_SCHEMA = {
         "seniority": {"type": "string", "enum": SENIORITY},
         "reason": {"type": "string", "description": "One line in Spanish"},
         "red_flags": {"type": "array", "items": {"type": "string"}},
+        "salary_usd_month": {"type": "integer", "description": "Top of the stated salary in USD per month, 0 if none"},
     },
-    "required": ["score", "fits_location", "seniority", "reason", "red_flags"],
+    "required": ["score", "fits_location", "seniority", "reason", "red_flags", "salary_usd_month"],
     "additionalProperties": False,
 }
 
@@ -41,12 +42,40 @@ Return JSON with:
   uncertainty in red_flags.
 - seniority: the level the posting asks for.
 - reason: ONE short line in Spanish (max ~150 characters) saying why it fits or not.
+- salary_usd_month: the TOP of the salary range stated anywhere in the posting, converted to US dollars per month
+  (yearly ÷ 12, hourly × 160, approximate current exchange rates). 0 if the posting states no salary.
 - red_flags: short items in Spanish (e.g. "requiere autorización de trabajo en EE.UU.", "stack principal Vue",
   "pago en moneda local"). Empty list if none.
 
 <profile>
 {profile}
 </profile>"""
+
+
+FEEDBACK_BLOCK = """
+
+<feedback>
+The candidate reacted to earlier postings. Use it as extra signal about their preferences (similar roles, stacks,
+companies, arrangements), without copying these scores.
+{lines}
+</feedback>"""
+
+
+def format_feedback(examples: Mapping[str, Any] | None) -> str:
+    """The <feedback> block for the prompt, from db.feedback_examples(); empty if there's no feedback yet."""
+    if not examples:
+        return ""
+
+    def line(job: Mapping[str, Any]) -> str:
+        where = f" ({job['location']})" if job.get("location") else ""
+        return f"- {job['title']} — {job['company']}{where}"
+
+    parts = []
+    if examples.get("liked"):
+        parts.append("Liked or applied to:\n" + "\n".join(line(dict(j)) for j in examples["liked"]))
+    if examples.get("disliked"):
+        parts.append("Not interested:\n" + "\n".join(line(dict(j)) for j in examples["disliked"]))
+    return FEEDBACK_BLOCK.replace("{lines}", "\n".join(parts)) if parts else ""
 
 
 def _join(items: Any) -> str:
@@ -139,6 +168,7 @@ class Scorer:
     profile: str
     client: Any = None
     location: Mapping[str, Any] | None = None
+    feedback: str = ""
     usage: Usage = field(default_factory=Usage)
 
     def __post_init__(self) -> None:
@@ -146,7 +176,7 @@ class Scorer:
             self.client = anthropic.Anthropic(timeout=120.0, max_retries=2)
         self.system = INSTRUCTIONS.replace("{location_rule}", location_rule(self.location)).replace(
             "{profile}", self.profile.strip()
-        )
+        ) + self.feedback
 
     @property
     def model(self) -> str:
@@ -215,6 +245,7 @@ def parse_response(response: Any) -> ScoreOutcome:
             "seniority": str(data.get("seniority") or "unknown"),
             "reason": " ".join(str(data.get("reason") or "").split())[:300],
             "red_flags": [str(flag) for flag in data.get("red_flags") or []][:8],
+            "salary_usd_month": max(0, int(data.get("salary_usd_month") or 0)),
         }
     except (ValueError, KeyError, TypeError) as exc:
         return ScoreOutcome(error=f"invalid JSON from model: {type(exc).__name__}")

@@ -10,4 +10,5 @@ REPO = Path(__file__).resolve().parent.parent
 def example_settings():
     settings = load_settings(REPO / "config.example.yaml")
     settings.raw["profile_path"] = "profile.example.md"
+    settings.raw["closed_check"] = {"enabled": False}  # tests never touch the network
     return settings

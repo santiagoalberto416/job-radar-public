@@ -16,8 +16,8 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /app
-COPY requirements.txt ./
-RUN python3 -m venv /app/.venv && /app/.venv/bin/pip install --no-cache-dir -r requirements.txt
+COPY requirements.lock ./
+RUN python3 -m venv /app/.venv && /app/.venv/bin/pip install --no-cache-dir -r requirements.lock
 
 COPY job_radar/ job_radar/
 COPY config.example.yaml profile.example.md .env.example ./

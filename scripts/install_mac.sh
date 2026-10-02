@@ -30,12 +30,16 @@ case "$REPO_DIR" in
     ;;
 esac
 
+# Exact tested versions (requirements.lock, generated from requirements.txt with `uv pip compile`).
+REQS="$REPO_DIR/requirements.lock"
+[ -f "$REQS" ] || REQS="$REPO_DIR/requirements.txt"
+
 # 1. Python venv (native arm64/x86_64 to match the Mac; Python 3.10-3.12).
 if command -v uv >/dev/null 2>&1; then
   echo "Using uv to provide Python $PY_VERSION"
   uv python install "$PY_VERSION"
   [ -x "$VENV/bin/python" ] || uv venv --python "$PY_VERSION" "$VENV"
-  uv pip install --python "$VENV/bin/python" -q -r "$REPO_DIR/requirements.txt"
+  uv pip install --python "$VENV/bin/python" -q -r "$REQS"
 else
   PYTHON=""
   for candidate in python3.12 python3.11 python3.10 /opt/homebrew/bin/python3.12 /opt/homebrew/bin/python3.11; do
@@ -48,7 +52,7 @@ else
   echo "Using $PYTHON"
   [ -x "$VENV/bin/python" ] || "$PYTHON" -m venv "$VENV"
   "$VENV/bin/python" -m pip install -q --upgrade pip
-  "$VENV/bin/python" -m pip install -q -r "$REPO_DIR/requirements.txt"
+  "$VENV/bin/python" -m pip install -q -r "$REQS"
 fi
 "$VENV/bin/python" -c "import jobspy, anthropic, yaml, dotenv" \
   || { echo "ERROR: dependencies failed to import (wrong CPU architecture?). Delete .venv and retry."; exit 1; }

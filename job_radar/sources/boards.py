@@ -227,3 +227,33 @@ def fetch_jobicy(cfg: dict[str, Any], client: httpx.Client) -> tuple[list[Job], 
     if geos and len(warnings) == len(geos):
         raise RuntimeError(f"all jobicy queries failed: {'; '.join(warnings[:3])}")
     return jobs, warnings
+
+
+# --- Working Nomads (https://www.workingnomads.com/api/exposed_jobs/): the ~60 newest remote jobs, all categories ---
+def parse_workingnomads(data: list[dict[str, Any]], categories: list[str] | None = None) -> list[Job]:
+    wanted = {c.lower() for c in categories or []}
+    jobs = []
+    for item in data:
+        if wanted and (item.get("category_name") or "").lower() not in wanted:
+            continue
+        url = item.get("url") or ""
+        jobs.append(
+            Job(
+                source="workingnomads",
+                external_id=url.rstrip("/").rsplit("/", 1)[-1] or None,
+                title=(item.get("title") or "").strip(),
+                company=(item.get("company_name") or "").strip(),
+                url=url,
+                location=f"Remote ({(item.get('location') or 'anywhere').strip()})",
+                description=html_to_text(item.get("description")),
+                posted_at=to_iso(item.get("pub_date")),
+                remote=True,
+            )
+        )
+    return jobs
+
+
+def fetch_workingnomads(cfg: dict[str, Any], client: httpx.Client) -> tuple[list[Job], list[str]]:
+    response = client.get("https://www.workingnomads.com/api/exposed_jobs/")
+    response.raise_for_status()
+    return parse_workingnomads(response.json(), cfg.get("categories") or ["Development"]), []

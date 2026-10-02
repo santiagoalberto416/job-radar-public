@@ -15,8 +15,8 @@ export interface SecurityOptions {
  * - Host must be 127.0.0.1/localhost on our port or a configured remote host (blocks DNS rebinding);
  * - requests that carry an Origin must come from one of those hosts (blocks other websites);
  * - state-changing requests must be JSON with the X-Portal header, which cross-site forms can't send;
- * - remote requests are READ-ONLY, except what `remoteMayWrite` allows (running commands that don't write to the
- *   DB). A request is remote if it uses a remote host or carries X-Forwarded-* headers (the tunnel always adds
+ * - remote requests are READ-ONLY, except what `remoteMayWrite` allows (running the listed commands, starting a
+ *   search, restarting the bot, tracking jobs). A request is remote if it uses a remote host or carries X-Forwarded-* headers (the tunnel always adds
  *   them and the client can't strip them), so it can't pose as local.
  */
 export function localOnly({ port, remoteHosts = [], remoteMayWrite = () => false }: SecurityOptions) {

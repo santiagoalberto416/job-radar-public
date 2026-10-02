@@ -34,6 +34,27 @@ credit:
 # "ya lo tienes" (ej. si usaste Java hace años en Android pero no tienes experiencia de backend con Spring).
 skills_report:
   not_really_have: []   # ej. [Java/Spring, Kotlin]
+# Salud del radar (todo opcional; estos son los valores por defecto).
+health:
+  disable_source_after_failures: 6   # fallos seguidos antes de desactivar una fuente (se avisa por Telegram)
+  retry_disabled_every_hours: 24     # una fuente desactivada se reintenta así de seguido y vuelve sola si funciona
+  stale_after_hours: 6               # el bot avisa si no ha terminado una búsqueda correcta en este tiempo
+  ping_url:                          # opcional: URL de healthchecks.io que te avisa por correo si el radar se apaga
+# Respaldo automático de la base de datos (en data/backups/).
+backup:
+  every_days: 7
+  keep: 4
+# Resumen semanal por Telegram (0 = lunes ... 6 = domingo; hora local).
+weekly_summary:
+  enabled: true
+  weekday: 0
+  hour: 7
+# Salario mínimo en USD al mes. Se descartan solo las ofertas que CLARAMENTE pagan menos (el máximo del rango); las
+# que no dicen salario siempre pasan. Vacío = solo mostrar el salario normalizado, sin filtrar.
+salary:
+  min_usd_month: 3000
+  fx_per_usd:        # tipo de cambio (unidades por 1 USD); actualízalo de vez en cuando
+    MXN: 18.0
 # Ignora ofertas publicadas hace más de estos días (cuando la fuente da la fecha).
 max_job_age_days: 30
 # Base de datos SQLite (relativa al repo).
@@ -53,6 +74,13 @@ llm:
   max_description_chars: 8000
   # Se deja de intentar calificar una oferta tras estos fallos (error de API o rechazo).
   max_attempts: 3
+  # Calificar con la Batch API de Claude: 50% más barato, pero no es instantáneo (normalmente minutos, hasta 24 h).
+  # Cada corrida espera el lote hasta batch_wait_minutes; si no termina, la siguiente corrida recoge los resultados.
+  batch: false
+  batch_wait_minutes: 10
+  # Usa tus 👍/👎 y postulaciones recientes como ejemplos para calificar (cuántos de cada tipo).
+  use_feedback: true
+  feedback_examples: 8
   # En claude-opus-5 / claude-fable-5-1, si el modelo rechaza una solicitud se reintenta en otro modelo.
   refusal_fallback: true
 
@@ -390,6 +418,12 @@ sources:
     geos:
       - mexico
       - latam
+  workingnomads:
+    # Las ~60 ofertas remotas más nuevas de Working Nomads (API pública); solo la categoría Development.
+    enabled: true
+    min_interval_hours: 6
+    categories:
+      - Development
   getonboard:
     enabled: true
     min_interval_hours: 4

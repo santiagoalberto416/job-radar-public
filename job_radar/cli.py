@@ -91,7 +91,8 @@ def cmd_telegram_setup(args: argparse.Namespace) -> int:
         if " 409 " in f" {exc} ":
             print("The job-radar bot daemon is already reading this bot's messages (only one reader is allowed).\n"
                   "Your chat is set up if the bot answers /ayuda. To run this anyway, stop the bot first:\n"
-                  f"  launchctl bootout gui/$(id -u)/{os.environ.get('JOB_RADAR_LABEL_PREFIX', 'com.jobradar')}.bot")
+                  + ("  docker compose stop bot" if os.environ.get("JOB_RADAR_RUNTIME") == "docker" else
+                     f"  launchctl bootout gui/$(id -u)/{os.environ.get('JOB_RADAR_LABEL_PREFIX', 'com.jobradar')}.bot"))
             return 1
         print(f"Telegram error: {exc}")
         return 1
@@ -224,12 +225,71 @@ def cmd_schedule(args: argparse.Namespace) -> int:
                 db = Database(load_settings().db_path)
                 db.set_meta("heartbeat_search", utcnow().isoformat())
                 db.close()
-            except Exception:
-                logging.getLogger("job_radar.scheduler").exception("heartbeat failed")
+            except Exception as exc:  # e.g. a long write in the run holds the lock: try again next minute
+                logging.getLogger("job_radar.scheduler").warning("heartbeat failed: %s", exc)
             time.sleep(60)
 
+    Database(load_settings().db_path).close()  # create/migrate the database before two threads use it
     threading.Thread(target=heartbeat_forever, name="heartbeat", daemon=True).start()
     serve(run_once)
+    return 0
+
+
+def cmd_source_enable(args: argparse.Namespace) -> int:
+    settings = load_settings()
+    db = Database(settings.db_path)
+    try:
+        ok = db.enable_source(args.source)
+    finally:
+        db.close()
+    print(f"Re-enabled {args.source}." if ok else f"{args.source} was not disabled.")
+    return 0
+
+
+def cmd_weekly(args: argparse.Namespace) -> int:
+    import re
+
+    from . import weekly
+    from .pipeline import local_now
+
+    settings = load_settings()
+    db = Database(settings.db_path)
+    try:
+        text = weekly.build(db, settings, local_now((settings.notify_window or {}).get("timezone")))
+    finally:
+        db.close()
+    print(re.sub(r"<[^>]+>", "", text))
+    if args.send:
+        token, chat_id = _require_token(), secret("TELEGRAM_CHAT_ID")
+        if not token or not chat_id:
+            return 1
+        telegram.send_message(token, chat_id, text)
+        print("Sent to Telegram.")
+    return 0
+
+
+def cmd_filter_report(args: argparse.Namespace) -> int:
+    import re
+    from datetime import timedelta
+
+    from . import filter_report
+    from .util import utcnow
+
+    settings = load_settings()
+    db = Database(settings.db_path)
+    try:
+        report = filter_report.build(db.jobs_first_seen_since(utcnow() - timedelta(days=args.days)),
+                                     settings.prefilter, args.days)
+    finally:
+        db.close()
+    text = filter_report.format_report(report)
+    print(re.sub(r"<[^>]+>", "", text))
+    if args.send:
+        token, chat_id = _require_token(), secret("TELEGRAM_CHAT_ID")
+        if not token or not chat_id:
+            return 1
+        telegram.send_message(token, chat_id, text)
+        print("Sent to Telegram.")
     return 0
 
 
@@ -278,6 +338,19 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_parser("bot", help="answer Telegram commands (/ultimos, /top, /hoy...); runs until stopped").set_defaults(
         func=cmd_bot
     )
+
+    p = sub.add_parser("source-enable", help="re-enable a source that was disabled after repeated failures")
+    p.add_argument("source")
+    p.set_defaults(func=cmd_source_enable)
+
+    p = sub.add_parser("filter-report", help="titles the keyword prefilter may be throwing away by mistake")
+    p.add_argument("--days", type=int, default=30)
+    p.add_argument("--send", action="store_true", help="also send it to Telegram")
+    p.set_defaults(func=cmd_filter_report)
+
+    p = sub.add_parser("weekly", help="the weekly summary (last 7 days)")
+    p.add_argument("--send", action="store_true", help="also send it to Telegram")
+    p.set_defaults(func=cmd_weekly)
 
     p = sub.add_parser("top", help="best scored jobs from the DB")
     p.add_argument("--days", type=int, default=7)

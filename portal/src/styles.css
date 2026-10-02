@@ -129,6 +129,7 @@ table.compact th, table.compact td { padding: 6px 8px; }
 .save-bar { position: sticky; bottom: 12px; }
 .chips { display: flex; gap: 8px; margin: -4px 0 14px; overflow-x: auto; scrollbar-width: none; }
 .chips::-webkit-scrollbar { display: none; }
+.tracking button.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); }
 .chip { border-radius: 99px; padding: 6px 14px; white-space: nowrap; background: var(--surface); }
 .chip.active { background: var(--accent-soft); border-color: var(--accent); color: var(--accent); font-weight: 600; }
 .card.flush { padding: 0; }

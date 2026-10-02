@@ -23,7 +23,7 @@ def env(tmp_path, monkeypatch):
     monkeypatch.setenv("TELEGRAM_BOT_TOKEN", "test-token")
     monkeypatch.setenv("TELEGRAM_CHAT_ID", "42")
     sent = []
-    monkeypatch.setattr(pipeline.telegram, "send_message", lambda token, chat, text: sent.append(text))
+    monkeypatch.setattr(pipeline.telegram, "send_message", lambda token, chat, text, **kw: sent.append(text))
     monkeypatch.setattr(pipeline, "local_now", lambda tz=None: datetime(2026, 9, 27, 12, 0))  # inside 07-21
 
     class FakeScorer:

@@ -33,6 +33,13 @@ export function timeAgo(iso: string | null | undefined): string {
   return `hace ${Math.round(minutes / 1440)} días`;
 }
 
+/** "~US$1.9k–2.5k/mes", like the Telegram digest. */
+export function usdMonth(low: number | null | undefined, high: number | null | undefined): string {
+  if (!high) return "";
+  const k = (v: number) => (v >= 1000 ? `${(v / 1000).toFixed(1).replace(/\.0$/, "")}k` : `${Math.round(v)}`);
+  return !low || Math.abs(high - low) < 50 ? `~US$${k(high)}/mes` : `~US$${k(low)}–${k(high)}/mes`;
+}
+
 export function usd(value: number | null | undefined): string {
   if (value === null || value === undefined) return "—";
   return Math.abs(value) >= 0.1 || value === 0 ? `$${value.toFixed(2)}` : `$${value.toFixed(3)}`;

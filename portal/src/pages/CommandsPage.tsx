@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import type { CommandInfo, CommandRun, TelegramCommandInfo } from "../../shared/types";
 import { api, timeAgo } from "../api";
 import Console from "../components/Console";
-import { useSession } from "../session";
 
 interface CommandsData {
   cli: CommandInfo[];
@@ -11,7 +10,6 @@ interface CommandsData {
 }
 
 export default function CommandsPage() {
-  const { readOnly } = useSession();
   const [data, setData] = useState<CommandsData | null>(null);
   const [run, setRun] = useState<CommandRun | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -54,12 +52,7 @@ export default function CommandsPage() {
   return (
     <>
       <h1>Comandos</h1>
-      {readOnly && (
-        <div className="notice">
-          🔒 Acceso remoto: puedes ejecutar los comandos que <strong>no escriben en la base de datos</strong>. Los
-          marcados «escribe en la DB» solo desde la Mac.
-        </div>
-      )}
+
       {error && <div className="error">{error}</div>}
       <div className="card">
         <h2>Línea de comandos</h2>
@@ -85,8 +78,7 @@ export default function CommandsPage() {
                 <td style={{ textAlign: "right" }}>
                   <button
                     className="primary"
-                    disabled={running || (readOnly && command.writesDb)}
-                    title={readOnly && command.writesDb ? "Escribe en la base de datos: solo desde la Mac" : undefined}
+                    disabled={running}
                     onClick={() => start(command)}
                   >
                     Ejecutar

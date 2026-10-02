@@ -19,7 +19,16 @@ export interface JobSummary {
   scored_at: string | null;
   notified_at: string | null;
   last_score_error: string | null;
+  feedback: "like" | "dislike" | null;
+  status: ApplicationStatus | null;
+  status_at: string | null;
+  notes: string | null;
+  salary_usd_low: number | null;
+  salary_usd_month: number | null;
+  closed_at: string | null;
 }
+
+export type ApplicationStatus = "applied" | "interview" | "offer" | "rejected";
 
 export interface JobDetail extends JobSummary {
   description: string | null;
@@ -28,7 +37,8 @@ export interface JobDetail extends JobSummary {
   score_attempts: number;
 }
 
-export type JobStatus = "all" | "relevant" | "matches" | "sent" | "waiting" | "scored" | "unscored" | "rejected";
+export type JobStatus =
+  | "all" | "relevant" | "matches" | "sent" | "waiting" | "scored" | "unscored" | "rejected" | "tracking";
 
 export interface JobsPage {
   jobs: JobSummary[];
@@ -87,6 +97,9 @@ export interface SourceStatus {
   last_ok_at: string | null;
   last_count: number | null;
   last_error: string | null;
+  fail_streak?: number;
+  disabled_at?: string | null;
+  disabled_reason?: string | null;
 }
 
 export interface Overview {

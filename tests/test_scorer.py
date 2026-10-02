@@ -55,7 +55,7 @@ def api_error(cls, status, message="boom"):
 def test_scores_job_with_structured_output_and_fallback():
     s = scorer(response(json.dumps(GOOD)))
     outcome = s.score(JOB)
-    assert outcome.result == GOOD and outcome.error is None
+    assert outcome.result == {**GOOD, "salary_usd_month": 0} and outcome.error is None
     call = s.client.beta.messages.calls[0]  # opus-5 uses the beta endpoint with server-side fallback
     assert call["fallbacks"] == "default" and call["betas"] == ["server-side-fallback-2026-07-01"]
     assert call["output_config"]["format"]["type"] == "json_schema"

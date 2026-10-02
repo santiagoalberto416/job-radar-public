@@ -11,7 +11,7 @@ const AGENT_NAMES: Record<string, string> = {
 const agentName = (label: string) => AGENT_NAMES[label.split(/[.:]/).pop() ?? ""] ?? label;
 
 export default function StatusPage() {
-  const { remote, readOnly } = useSession();
+  const { remote } = useSession();
   const [data, setData] = useState<Overview | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -94,9 +94,9 @@ export default function StatusPage() {
                       {agent.label === "docker:bot" ? (
                         <code className="small">docker compose restart bot</code>
                       ) : agent.label.endsWith(".bot") ? (
-                        <button disabled={readOnly} onClick={() => kick("bot")}>Reiniciar bot</button>
+                        <button onClick={() => kick("bot")}>Reiniciar bot</button>
                       ) : (
-                        <button disabled={readOnly} onClick={() => kick("search")}>Buscar ahora</button>
+                        <button onClick={() => kick("search")}>Buscar ahora</button>
                       )}
                     </td>
                   </tr>
@@ -115,7 +115,15 @@ export default function StatusPage() {
                 {data.sources.map((s) => (
                   <tr key={s.source} style={{ cursor: "default" }}>
                     <td>{s.source}</td>
-                    <td>{s.last_error ? <span className="pill bad" title={s.last_error}>Error: {s.last_error}</span> : <span className="pill good">OK</span>}</td>
+                    <td>
+                      {s.disabled_at ? (
+                        <span className="pill warn" title={s.disabled_reason ?? ""}>Desactivada (se reintenta cada 24 h)</span>
+                      ) : s.last_error ? (
+                        <span className="pill bad" title={s.last_error}>Error: {s.last_error}</span>
+                      ) : (
+                        <span className="pill good">OK</span>
+                      )}
+                    </td>
                     <td>{s.last_count ?? "—"}</td>
                     <td className="muted">{timeAgo(s.last_ok_at)}</td>
                   </tr>

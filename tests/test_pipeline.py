@@ -149,7 +149,8 @@ def test_daily_credit_message_once_per_day_with_spend(env, monkeypatch):
         "greenhouse": FetchResult("greenhouse", jobs=GOOD_JOBS),
         "remotive": FetchResult("remotive"),
     }))
-    monkeypatch.setattr(pipeline, "local_now", lambda tz=None: datetime.now().astimezone())
+    # noon today: inside notify_window whatever time the tests run (CI runs in UTC)
+    monkeypatch.setattr(pipeline, "local_now", lambda tz=None: datetime.now().astimezone().replace(hour=12, minute=0))
     pipeline.run(settings)
     credit_msgs = [m for m in sent if "Crédito Claude" in m]
     assert len(credit_msgs) == 1 and "Saldo estimado" in credit_msgs[0]

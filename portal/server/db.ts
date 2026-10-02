@@ -114,6 +114,11 @@ export class JobsDb {
     return { jobs: jobs.map((j) => ({ ...j })), total, page, pageSize, sources };
   }
 
+  getMeta(key: string): string | null {
+    const row = this.conn()?.prepare("SELECT value FROM meta WHERE key = ?").get(key) as { value: string } | undefined;
+    return row?.value ?? null;
+  }
+
   getJob(id: number): JobDetail | null {
     const db = this.conn();
     const row = db?.prepare("SELECT * FROM jobs WHERE id = ?").get(id) as Record<string, unknown> | undefined;

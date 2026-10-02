@@ -50,6 +50,9 @@ hacer que bloqueen tu número. Telegram es gratis, sin plantillas ni ventanas de
 
 ## Requisitos
 
+> **¿Windows o Linux, o quieres tenerlo encendido 24/7 en un servidor?** Usa la versión con
+> [Docker](#docker-windows-linux-o-servidor). Lo de abajo es la instalación nativa para Mac.
+
 | Necesitas | Para qué | Notas |
 |---|---|---|
 | **Mac** (Apple Silicon o Intel) | Corre los servicios en segundo plano (launchd) | Sesión iniciada; ver [Mantener la Mac despierta](#mantener-la-mac-despierta) |
@@ -148,6 +151,62 @@ solo: la primera corrida es inmediata y luego cada 2 horas.
 ```bash
 portal/scripts/install_portal.sh      # queda en http://127.0.0.1:4747
 ```
+
+## Docker (Windows, Linux o servidor)
+
+La misma aplicación empaquetada en Docker: funciona en **Windows, Linux y Mac**, y en un **servidor o VPS
+encendido 24/7** (así no dependes de que tu computadora esté despierta). Corre tres servicios: `search` (la búsqueda
+en el mismo horario: al arrancar, cada 2 horas y a las 7:00), `bot` (el bot de Telegram) y `portal`
+(en http://127.0.0.1:4747, solo accesible desde esa máquina).
+
+**Requisitos:** [Docker Desktop](https://www.docker.com/products/docker-desktop/) (Windows/Mac) o Docker Engine con
+Compose (Linux), cuenta de Anthropic con crédito y Telegram. No necesitas instalar Python ni Node.
+
+```bash
+git clone https://github.com/santiagoalberto416/job-radar-public.git job-radar
+cd job-radar
+cp config.example.yaml config.yaml      # en Windows (PowerShell): copy config.example.yaml config.yaml
+cp profile.example.md profile.md
+cp .env.example .env
+```
+
+1. Edita `profile.md`, `config.yaml` y `.env` igual que en los pasos 3 a 6 de la [instalación](#instalación). En
+   `.env` descomenta `TZ=` y pon tu zona horaria (ej. `America/Bogota`); por defecto es `America/Mexico_City`.
+2. Tu chat_id de Telegram (después de escribirle a tu bot):
+
+   ```bash
+   docker compose run --rm search python -m job_radar telegram-setup
+   docker compose run --rm search python -m job_radar test-telegram
+   ```
+3. Prueba y arranca:
+
+   ```bash
+   docker compose run --rm search python -m job_radar run --dry-run --max-llm 5
+   docker compose up -d --build
+   ```
+
+| Tarea | Comando |
+|---|---|
+| Ver logs | `docker compose logs -f search` (o `bot`, `portal`); también quedan en la carpeta `logs/` |
+| Cualquier comando de la CLI | `docker compose run --rm search python -m job_radar <comando>` |
+| Buscar ahora | Portal → Estado → *Buscar ahora*, o `/buscar` en Telegram |
+| Reiniciar el bot (tras cambiar `.env`) | `docker compose restart bot` |
+| Actualizar a una versión nueva | `git pull && docker compose up -d --build` |
+| Detener todo | `docker compose down` (tus datos se conservan) |
+| Respaldar la base de datos | `docker compose cp search:/data/data/jobs.db ./jobs-backup.db` |
+
+**Acceso remoto (opcional):** llena `NGROK_AUTHTOKEN`, `NGROK_DOMAIN` y `NGROK_ALLOWED_EMAILS` en `.env` (ver
+[portal/README.md](portal/README.md)) y arranca con `docker compose --profile remote up -d --build`. El túnel no
+arranca si no hay correos autorizados, y el acceso remoto es de solo lectura.
+
+Notas:
+
+- Tus archivos (`config.yaml`, `profile.md`, `.env`, `logs/`) se leen de la carpeta del repo, así que puedes
+  editarlos directamente o desde el portal. La base de datos vive en un volumen de Docker (`jobs-data`), que es
+  más confiable para SQLite cuando varios contenedores la usan.
+- En una laptop, Docker también se detiene cuando la computadora se duerme; al despertar corre la búsqueda
+  pendiente. Para 24/7, úsalo en un servidor.
+- Si ya tenías la instalación nativa de Mac, no corras ambas a la vez: detén la nativa con `scripts/uninstall_mac.sh`.
 
 ## Uso diario
 
@@ -316,6 +375,8 @@ califica ni se envía dos veces. Si todas las fuentes fallan en una corrida te l
 | Los servicios no leen el repo ("Operation not permitted") | El repo está en Documents/Desktop/Downloads/iCloud. Muévelo (ej. a `~/job-radar`) y reinstala |
 | `telegram-setup` no encuentra mensajes | Escríbele al bot primero. Si el servicio del bot ya corre, él lee los mensajes: detenlo con `launchctl bootout gui/$(id -u)/com.jobradar.bot` y reintenta |
 | Telegram responde `401 Unauthorized` | El token está mal copiado o se revocó. Cópialo de nuevo en @BotFather → `/mybots` → API Token |
+| Docker: el portal no abre | Revisa `docker compose ps` y `docker compose logs portal`. El puerto se publica solo en 127.0.0.1 (cámbialo con `PORTAL_PORT` en `.env`) |
+| Docker: la hora de los mensajes está corrida | Pon tu zona horaria en `TZ=` en `.env` y reinicia: `docker compose up -d` |
 | No llegan ofertas | Revisa `/estado` y `/hoy` en el bot: puede ser que ninguna pase de `min_score`, que estés fuera de `notify_window` o que una fuente falle |
 | "credit balance is too low" | Recarga crédito en console.anthropic.com y actualiza `credit` en `config.yaml` |
 | Una fuente falla siempre (403, bloqueo) | Desactívala con `enabled: false`; las demás siguen funcionando |

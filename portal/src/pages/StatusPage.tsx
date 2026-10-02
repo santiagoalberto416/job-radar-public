@@ -8,7 +8,7 @@ const AGENT_NAMES: Record<string, string> = {
   search: "Búsqueda programada (cada 2 h)",
   bot: "Bot de Telegram",
 };
-const agentName = (label: string) => AGENT_NAMES[label.split(".").pop() ?? ""] ?? label;
+const agentName = (label: string) => AGENT_NAMES[label.split(/[.:]/).pop() ?? ""] ?? label;
 
 export default function StatusPage() {
   const { remote, readOnly } = useSession();
@@ -85,11 +85,15 @@ export default function StatusPage() {
                       ) : agent.running ? (
                         <span className="pill good">Corriendo (pid {agent.pid})</span>
                       ) : (
-                        <span className="pill">En espera · último exit {agent.lastExitCode}</span>
+                        <span className="pill">
+                          {agent.label.startsWith("docker:") ? `Sin señal (${agent.lastExitCode})` : `En espera · último exit ${agent.lastExitCode}`}
+                        </span>
                       )}
                     </td>
                     <td style={{ textAlign: "right" }}>
-                      {agent.label.endsWith(".bot") ? (
+                      {agent.label === "docker:bot" ? (
+                        <code className="small">docker compose restart bot</code>
+                      ) : agent.label.endsWith(".bot") ? (
                         <button disabled={readOnly} onClick={() => kick("bot")}>Reiniciar bot</button>
                       ) : (
                         <button disabled={readOnly} onClick={() => kick("search")}>Buscar ahora</button>

@@ -31,3 +31,4 @@ __pycache__/
 # your personal setup (copy from the .example files)
 config.yaml
 profile.md
+logs/

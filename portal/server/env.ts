@@ -5,6 +5,10 @@ const KNOWN: Record<string, { secret: boolean; description: string }> = {
   ANTHROPIC_API_KEY: { secret: true, description: "Clave de la API de Claude (console.anthropic.com → API Keys)" },
   TELEGRAM_BOT_TOKEN: { secret: true, description: "Token del bot de Telegram (@BotFather → /mybots → API Token)" },
   TELEGRAM_CHAT_ID: { secret: false, description: "Tu chat_id de Telegram (python -m job_radar telegram-setup)" },
+  TZ: { secret: false, description: "Docker: zona horaria (ej. America/Mexico_City)" },
+  NGROK_AUTHTOKEN: { secret: true, description: "Docker: token de ngrok para el acceso remoto" },
+  NGROK_DOMAIN: { secret: false, description: "Docker: tu dominio estático de ngrok" },
+  NGROK_ALLOWED_EMAILS: { secret: false, description: "Docker: correos de Google autorizados (separados por coma)" },
 };
 const KEY_PATTERN = /^[A-Z][A-Z0-9_]*$/;
 const LINE_PATTERN = /^\s*(?:export\s+)?([A-Za-z_][A-Za-z0-9_]*)\s*=(.*)$/;

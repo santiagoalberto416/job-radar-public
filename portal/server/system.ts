@@ -30,6 +30,18 @@ export function parseLaunchctl(label: string, output: string | null): AgentStatu
   return { label, loaded: true, running: state === "running", pid: pid ? Number(pid) : null, lastExitCode: exit };
 }
 
+export type Runtime = "launchd" | "docker";
+
+export function detectRuntime(): Runtime {
+  return process.env.JOB_RADAR_RUNTIME === "docker" ? "docker" : "launchd";
+}
+
+/** Docker has no launchd: a service counts as running if it wrote its heartbeat in the last 3 minutes. */
+export function dockerAgentStatus(key: AgentKey, heartbeat: string | null, now = Date.now()): AgentStatus {
+  const alive = heartbeat !== null && now - new Date(heartbeat).getTime() < 3 * 60_000;
+  return { label: `docker:${key}`, loaded: true, running: alive, pid: null, lastExitCode: alive ? null : "sin señal" };
+}
+
 export async function agentStatus(key: AgentKey): Promise<AgentStatus> {
   const label = AGENTS[key];
   try {

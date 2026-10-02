@@ -106,7 +106,7 @@ before(async () => {
   const fakePython = path.join(repo, "fake-python");
   fs.writeFileSync(fakePython, '#!/bin/sh\necho "ran: $@"\n', { mode: 0o755 });
   const paths: Paths = {
-    repo, env: path.join(repo, ".env"), envExample: path.join(repo, ".env.example"),
+    repo, home: repo, env: path.join(repo, ".env"), envExample: path.join(repo, ".env.example"),
     config: path.join(repo, "config.yaml"), profile: path.join(repo, "profile.md"),
     python: fakePython, logDir: path.join(repo, "logs"),
   };
@@ -294,5 +294,46 @@ describe("commands", () => {
     }
     assert.equal(run.status, "ok");
     assert.match(run.output, /ran: -m job_radar credit/);
+  });
+});
+
+
+describe("docker runtime", () => {
+  test("service status comes from heartbeats", async () => {
+    const { dockerAgentStatus } = await import("../server/system");
+    const now = Date.parse("2026-10-01T12:00:00Z");
+    assert.equal(dockerAgentStatus("bot", "2026-10-01T11:59:00+00:00", now).running, true);
+    assert.equal(dockerAgentStatus("bot", "2026-10-01T11:50:00+00:00", now).running, false);
+    assert.equal(dockerAgentStatus("search", null, now).running, false);
+    assert.equal(dockerAgentStatus("search", null, now).label, "docker:search");
+  });
+
+  test("overview and actions work without launchd", async () => {
+    const db = new DatabaseSync(path.join(repo, "data", "jobs.db"));
+    db.prepare("INSERT OR REPLACE INTO meta (key, value) VALUES ('heartbeat_search', ?)").run(new Date().toISOString());
+    db.close();
+    const dockerPort = await freePort();
+    const fakePython = path.join(repo, "fake-python");
+    const paths: Paths = {
+      repo, home: repo, env: path.join(repo, ".env"), envExample: path.join(repo, ".env.example"),
+      config: path.join(repo, "config.yaml"), profile: path.join(repo, "profile.md"), python: fakePython,
+      logDir: path.join(repo, "logs"),
+    };
+    const dockerServer = createApp({ paths, port: dockerPort, runtime: "docker", runner: new CommandRunner(fakePython, repo) })
+      .listen(dockerPort, "127.0.0.1");
+    await new Promise((r) => dockerServer.once("listening", r));
+    const savedPort = port;
+    port = dockerPort;
+    try {
+      const agents = (await request("GET", "/api/overview")).json.agents;
+      assert.deepEqual(agents.map((a: any) => [a.label, a.running]), [["docker:search", true], ["docker:bot", false]]);
+      const bot = await request("POST", "/api/agents/bot/kickstart", { body: {} });
+      assert.equal(bot.status, 400);
+      assert.match(bot.json.error, /docker compose restart bot/);
+      assert.equal((await request("POST", "/api/agents/search/kickstart", { body: {} })).status, 200);
+    } finally {
+      port = savedPort;
+      dockerServer.close();
+    }
   });
 });

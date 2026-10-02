@@ -1,0 +1,68 @@
+# job-radar with Docker. Run from the repo folder, after creating config.yaml, profile.md and .env
+# (see the README, section "Docker"):
+#   docker compose up -d --build                     # search every 2 h + Telegram bot + portal on 127.0.0.1:4747
+#   docker compose --profile remote up -d --build    # ...plus the ngrok tunnel (read-only, Google login)
+name: job-radar
+
+x-app: &app
+  build: .
+  image: job-radar:local
+  restart: unless-stopped
+  environment:
+    TZ: ${TZ:-America/Mexico_City}          # notify_window and the schedule use this time zone
+  volumes:
+    - ./:/data                              # your config.yaml, profile.md, .env and logs/
+    - jobs-data:/data/data                  # the SQLite database, on a Docker volume (reliable file locking)
+
+services:
+  search:
+    <<: *app
+    command: ["python", "-m", "job_radar", "schedule"]
+
+  bot:
+    <<: *app
+    command: ["python", "-m", "job_radar", "bot"]
+
+  portal:
+    <<: *app
+    working_dir: /app/portal
+    command: ["node", "--disable-warning=ExperimentalWarning", "--import", "tsx", "server/index.ts"]
+    environment:
+      TZ: ${TZ:-America/Mexico_City}
+      PORTAL_BIND: 0.0.0.0                  # inside the container only; published on the host's 127.0.0.1 below
+      PORTAL_PORT: ${PORTAL_PORT:-4747}     # same port inside and outside: the portal checks the Host header
+      PORTAL_REMOTE_HOSTS: ${NGROK_DOMAIN:-}
+    ports:
+      - "127.0.0.1:${PORTAL_PORT:-4747}:${PORTAL_PORT:-4747}"
+
+  # --- optional: remote access through ngrok (docker compose --profile remote ...) ---------------------
+  tunnel-policy:                            # renders the Google-login policy; refuses without allowed emails
+    <<: *app
+    profiles: [remote]
+    restart: "no"
+    command: ["python", "/app/scripts/docker/render_policy.py", "/policy/policy.yml"]
+    environment:
+      NGROK_ALLOWED_EMAILS: ${NGROK_ALLOWED_EMAILS:-}
+      NGROK_DOMAIN: ${NGROK_DOMAIN:-}
+    volumes:
+      - ngrok-policy:/policy
+
+  tunnel:
+    image: ngrok/ngrok:3
+    profiles: [remote]
+    restart: unless-stopped
+    depends_on:
+      tunnel-policy:
+        condition: service_completed_successfully
+      portal:
+        condition: service_started
+    environment:
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN:-}
+    command: ["http", "http://portal:${PORTAL_PORT:-4747}", "--url", "https://${NGROK_DOMAIN:-}",
+              "--traffic-policy-file", "/policy/policy.yml", "--inspect=false", "--log", "stdout"]
+    volumes:
+      - ngrok-policy:/policy:ro
+
+volumes:
+  jobs-data:
+  ngrok-policy:

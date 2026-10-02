@@ -5,7 +5,9 @@ import { createApp } from "./app";
 import { defaultPaths } from "./paths";
 
 const PORT = Number(process.env.PORTAL_PORT ?? 4747);
-const HOST = "127.0.0.1"; // never listen on other interfaces: the portal can read and change secrets
+// Only this machine by default: the portal can read and change secrets. Docker sets PORTAL_BIND=0.0.0.0 INSIDE the
+// container and publishes the port on the host's 127.0.0.1 only (see docker-compose.yml).
+const HOST = process.env.PORTAL_BIND || "127.0.0.1";
 const portalDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const staticDir = path.join(portalDir, "dist");
 

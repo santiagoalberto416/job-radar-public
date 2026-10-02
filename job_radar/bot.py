@@ -10,7 +10,7 @@ from __future__ import annotations
 import logging
 import threading
 import time
-from datetime import datetime, timedelta
+from datetime import datetime
 from typing import Any, Callable
 
 import httpx
@@ -19,13 +19,13 @@ from . import credit, pipeline, telegram
 from .config import Settings, load_settings, secret
 from .db import Database
 from .models import normalize_text
+from .scheduler import SCHEDULE_HOURS, next_run  # noqa: F401  (re-exported for callers/tests)
 from .util import USER_AGENT, utcnow
 
 log = logging.getLogger("job_radar.bot")
 
 POLL_SECONDS = 50
-# Keep in sync with StartCalendarInterval in scripts/search.plist.template.
-SCHEDULE_HOURS = sorted(set(range(0, 24, 2)) | {7})
+# The search schedule lives in scheduler.py (shared with the Docker scheduler).
 
 COMMANDS = [
     ("ultimos", "Últimas ofertas que pasaron el corte (ej. /ultimos 10)"),
@@ -84,15 +84,6 @@ def help_text() -> str:
     lines = ["🛰️ <b>job-radar</b>: comandos"] + [f"/{name}: {telegram.escape(desc)}" for name, desc in COMMANDS]
     lines.append("\nTambién puedes escribirlos sin la barra, por ejemplo: <i>ultimos 10</i>.")
     return "\n".join(lines)
-
-
-def next_run(now_local: datetime) -> datetime:
-    for day in (0, 1):
-        for hour in SCHEDULE_HOURS:
-            candidate = (now_local + timedelta(days=day)).replace(hour=hour, minute=0, second=0, microsecond=0)
-            if candidate > now_local:
-                return candidate
-    raise AssertionError("unreachable")
 
 
 def handle(command: str | None, number: int | None, settings: Settings, db: Database, now_local: datetime) -> list[str]:
@@ -234,6 +225,9 @@ class Bot:
                 backoff = min(backoff * 2, 300)
                 continue
             backoff = 5.0
+            db = Database(self.settings.db_path)
+            db.set_meta("heartbeat_bot", utcnow().isoformat())  # lets the portal show the bot as alive in Docker
+            db.close()
             for update in updates:
                 offset = update["update_id"] + 1
                 db = Database(self.settings.db_path)

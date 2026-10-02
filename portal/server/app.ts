@@ -8,12 +8,15 @@ import { JobsDb, readConfigBits } from "./db";
 import { listEnv, setEnv, validateEntry } from "./env";
 import type { Paths } from "./paths";
 import { localOnly } from "./security";
-import { AGENTS, LOGS, agentStatus, kickstart, tailLog, type AgentKey, type LogKey } from "./system";
+import {
+  AGENTS, LOGS, agentStatus, detectRuntime, dockerAgentStatus, kickstart, tailLog, type AgentKey, type LogKey, type Runtime,
+} from "./system";
 
 export interface AppOptions {
   paths: Paths;
   port: number;
   remoteHosts?: string[];
+  runtime?: Runtime;
   staticDir?: string;
   runner?: CommandRunner;
 }
@@ -22,12 +25,12 @@ class BadRequest extends Error {}
 
 const STATUSES: JobStatus[] = ["all", "relevant", "matches", "sent", "waiting", "scored", "unscored", "rejected"];
 
-export function createApp({ paths, port, remoteHosts = [], staticDir, runner }: AppOptions) {
+export function createApp({ paths, port, remoteHosts = [], runtime = detectRuntime(), staticDir, runner }: AppOptions) {
   const app = express();
   const commands = runner ?? new CommandRunner(paths.python, paths.repo);
   let jobsDb: JobsDb | null = null;
   const db = () => {
-    const bits = readConfigBits(paths.repo, paths.config);
+    const bits = readConfigBits(paths.home, paths.config);
     if (!jobsDb || jobsDb.file !== bits.dbPath) {
       jobsDb?.close();
       jobsDb = new JobsDb(bits.dbPath);
@@ -80,12 +83,24 @@ export function createApp({ paths, port, remoteHosts = [], staticDir, runner }: 
   // --- status -----------------------------------------------------------------------------------
   app.get("/api/overview", route(async () => {
     const { db: jobs, bits } = db();
-    const agents = await Promise.all((Object.keys(AGENTS) as AgentKey[]).map(agentStatus));
+    const keys = Object.keys(AGENTS) as AgentKey[];
+    const agents = runtime === "docker"
+      ? keys.map((key) => dockerAgentStatus(key, jobs.getMeta(`heartbeat_${key}`)))
+      : await Promise.all(keys.map(agentStatus));
     return { agents, ...jobs.overview(bits) };
   }));
   app.post("/api/agents/:key/kickstart", route(async (req) => {
     const key = String(req.params.key);
     if (!(key in AGENTS)) throw new BadRequest("Agente desconocido");
+    if (runtime === "docker") {
+      if (key === "bot") throw new BadRequest("En Docker, reinicia el bot con:  docker compose restart bot");
+      try {
+        commands.start("run");  // same effect as starting the launchd agent: one search now
+      } catch (error) {
+        throw new BadRequest((error as Error).message);
+      }
+      return { ok: true };
+    }
     await kickstart(key as AgentKey);
     return { ok: true };
   }));

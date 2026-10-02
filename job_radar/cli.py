@@ -7,6 +7,8 @@ import json
 import logging
 import os
 import sys
+import threading
+import time
 from pathlib import Path
 
 from . import telegram
@@ -18,12 +20,25 @@ from .util import utcnow
 MAX_LOG_BYTES = 5 * 1024 * 1024
 
 
-def _setup_logging(verbose: bool) -> None:
+LOG_FILES = {"run": "job-radar.log", "schedule": "job-radar.log", "bot": "job-radar-bot.log"}
+
+
+def _setup_logging(verbose: bool, command: str | None = None) -> None:
     logging.basicConfig(
         level=logging.DEBUG if verbose else logging.INFO,
         format="%(asctime)s %(levelname)-7s %(message)s",
         datefmt="%Y-%m-%d %H:%M:%S",
     )
+    # Docker: also write to a rotating file in JOB_RADAR_LOG_DIR (on macOS launchd redirects stdout instead).
+    log_dir = os.environ.get("JOB_RADAR_LOG_DIR")
+    if log_dir and command in LOG_FILES:
+        from logging.handlers import RotatingFileHandler
+
+        Path(log_dir).mkdir(parents=True, exist_ok=True)
+        handler = RotatingFileHandler(Path(log_dir) / LOG_FILES[command], maxBytes=MAX_LOG_BYTES, backupCount=1,
+                                      encoding="utf-8")
+        handler.setFormatter(logging.Formatter("%(asctime)s %(levelname)-7s %(message)s", "%Y-%m-%d %H:%M:%S"))
+        logging.getLogger().addHandler(handler)
     # httpx logs full request URLs at INFO, and Telegram URLs contain the bot token: keep them quiet.
     for noisy in ("httpx", "httpx2", "httpcore", "anthropic", "urllib3", "JobSpy"):
         logging.getLogger(noisy).setLevel(logging.WARNING)
@@ -194,6 +209,30 @@ def cmd_skills(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_schedule(args: argparse.Namespace) -> int:
+    from .db import Database
+    from .scheduler import serve
+    from .util import utcnow
+
+    def run_once() -> None:
+        run(load_settings())
+
+    def heartbeat_forever() -> None:
+        # In its own thread so the portal keeps seeing the service alive during long runs (the batch wait).
+        while True:
+            try:
+                db = Database(load_settings().db_path)
+                db.set_meta("heartbeat_search", utcnow().isoformat())
+                db.close()
+            except Exception:
+                logging.getLogger("job_radar.scheduler").exception("heartbeat failed")
+            time.sleep(60)
+
+    threading.Thread(target=heartbeat_forever, name="heartbeat", daemon=True).start()
+    serve(run_once)
+    return 0
+
+
 def cmd_bot(args: argparse.Namespace) -> int:
     from .bot import main as bot_main
 
@@ -232,6 +271,10 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--no-llm", action="store_true", help="numbers only, skip the Claude recommendation")
     p.set_defaults(func=cmd_skills)
 
+    sub.add_parser("schedule", help="run searches on the built-in schedule (Docker/Linux; macOS uses launchd)").set_defaults(
+        func=cmd_schedule
+    )
+
     sub.add_parser("bot", help="answer Telegram commands (/ultimos, /top, /hoy...); runs until stopped").set_defaults(
         func=cmd_bot
     )
@@ -245,7 +288,7 @@ def build_parser() -> argparse.ArgumentParser:
 
 def main(argv: list[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
-    _setup_logging(args.verbose)
+    _setup_logging(args.verbose, args.command)
     return args.func(args)
 
 

@@ -13,6 +13,12 @@ from dotenv import load_dotenv
 REPO_ROOT = Path(__file__).resolve().parent.parent
 
 
+def home_dir() -> Path:
+    """Where your personal files live: .env, config.yaml, profile.md and data/.
+    The repo folder by default; Docker points JOB_RADAR_HOME at the mounted folder."""
+    return Path(os.environ.get("JOB_RADAR_HOME") or REPO_ROOT)
+
+
 @dataclass
 class Settings:
     raw: dict[str, Any]
@@ -72,13 +78,14 @@ class Settings:
 
 
 def load_settings(config_path: Path | None = None) -> Settings:
-    load_dotenv(REPO_ROOT / ".env")
-    path = config_path or REPO_ROOT / "config.yaml"
+    home = home_dir()
+    load_dotenv(home / ".env")
+    path = config_path or home / "config.yaml"
     if not Path(path).exists():
         raise SystemExit("Falta config.yaml. Créalo desde el ejemplo:  cp config.example.yaml config.yaml")
     with open(path, encoding="utf-8") as fh:
         raw = yaml.safe_load(fh) or {}
-    return Settings(raw=raw, root=REPO_ROOT)
+    return Settings(raw=raw, root=home if config_path is None else Path(path).resolve().parent)
 
 
 def secret(name: str) -> str | None:

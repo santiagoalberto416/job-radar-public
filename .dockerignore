@@ -1,0 +1,16 @@
+.git
+.venv
+**/node_modules
+portal/dist
+portal/.remote-hosts
+portal/ngrok/policy.yml
+data
+logs
+tests
+docs
+.env
+config.yaml
+profile.md
+.public-denylist
+*.log
+.DS_Store
